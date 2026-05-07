@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { getIdeas, createIdea, updateIdea, deleteIdea, Idea } from '@/services/ideaService';
 import IdeaDialog from './IdeaDialog';
+import { toast } from 'sonner';
 
 // Importar estilos de AG Grid
 import 'ag-grid-community/styles/ag-grid.css';
@@ -54,6 +55,14 @@ const IdeasPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] });
       setDialogOpen(false);
+      toast.success('¡Idea creada con éxito!', {
+        description: 'Se ha añadido al laboratorio correctamente.'
+      });
+    },
+    onError: () => {
+      toast.error('Error al crear la idea', {
+        description: 'Por favor, verifica los datos e intenta nuevamente.'
+      });
     }
   });
 
@@ -62,6 +71,10 @@ const IdeasPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] });
       setDialogOpen(false);
+      toast.success('Idea actualizada');
+    },
+    onError: () => {
+      toast.error('Error al actualizar la idea');
     }
   });
 
@@ -69,6 +82,12 @@ const IdeasPage = () => {
     mutationFn: deleteIdea,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] });
+      toast.success('Idea eliminada', {
+        description: 'El registro se ha borrado lógicamente del sistema.'
+      });
+    },
+    onError: () => {
+      toast.error('No se pudo eliminar la idea');
     }
   });
 

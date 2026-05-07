@@ -13,7 +13,7 @@ GET /api/orders?page=1&pageSize=50&sortBy=createdAt&sortDir=desc&search=foo&stat
 
 | Param      | Tipo   | Default | Notas                                 |
 |------------|--------|---------|---------------------------------------|
-| page       | int    | 1       | 1-based                               |
+| page       | int    | 1       | **1-based** (page=1 es la primera página). El offset se calcula como `(page - 1) * pageSize`. |
 | pageSize   | int    | 25      | máx 100 (BLOCKER)                     |
 | sortBy     | string | —       | columna whitelisted                   |
 | sortDir    | enum   | asc     | `asc` \| `desc`                       |
@@ -56,8 +56,19 @@ GET /api/feed?cursor=eyJpZCI6Li4ufQ&limit=20
 - [BLOCKER] No devolver más de lo pedido aunque haya más en memoria.
 - [STRICT] El frontend nunca filtra/ordena datasets >1000 registros del lado cliente.
 
+## Cálculo de offset en backend
+
+- [BLOCKER] La fórmula de offset es `(page - 1) * pageSize`. `page=1` devuelve los primeros `pageSize` registros. Nunca tratar `page` como 0-based.
+
+```typescript
+// Conversión estándar — siempre en el service o repository, nunca en el controller
+const offset = (page - 1) * pageSize;
+const rows = await db('tabla').limit(pageSize).offset(offset);
+```
+
 ## AG Grid server-side
 
 - El backend recibe los parámetros de AG Grid (`startRow`, `endRow`, `sortModel`,
   `filterModel`) y los traduce a los estándar de arriba en una capa de adapter.
 - El controller no acepta `sortModel` directo: lo valida y mapea.
+- `startRow` de AG Grid es 0-based; convertir a `page` con `Math.floor(startRow / pageSize) + 1`.

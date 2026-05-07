@@ -4,6 +4,8 @@ import theme from './theme';
 import Layout from './components/layout/Layout';
 import IdeasPage from './features/ideas/IdeasPage';
 
+import { Toaster } from 'sonner';
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -11,6 +13,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <Toaster 
+          richColors 
+          closeButton 
+          position="top-right"
+          theme="dark"
+        />
         <Layout>
           <IdeasPage />
         </Layout>

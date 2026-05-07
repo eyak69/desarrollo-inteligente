@@ -1,10 +1,10 @@
 # Testing
 
-## Stack oficial
+## Stack oficial (Implementado v1.0.0)
 
-- **Unitarios / integración frontend:** Vitest + React Testing Library.
-- **E2E:** Playwright.
-- **Backend:** Vitest (o Jest si el proyecto ya lo usa) para servicios y endpoints.
+- **Unitarios / Integración (Frontend & Backend):** [Vitest](https://vitest.dev/). Se eligió por su velocidad y compatibilidad nativa con el entorno Vite/TSX.
+- **E2E:** Playwright (Pendiente de implementación).
+- **Carga / Stress:** k6.
 
 ## Estrategia por capa
 
@@ -70,3 +70,11 @@
   assert de comportamiento) no cuenta como cobertura real.
 - [GUIDE] Preferir tests de comportamiento (qué hace) sobre tests de
   implementación (cómo lo hace internamente).
+
+## Documentación y Evidencia
+
+- [STRICT] **Reporte de Hito:** Cada cambio arquitectónico o funcional importante (v0.x.x) DEBE ir acompañado de un archivo de evidencia (`walkthrough.md`) que documente los tests ejecutados y sus resultados.
+- [STRICT] **Captura de Salida:** Los resultados de la consola de los tests (Vitest/k6) deben ser persistidos en la documentación del hito para auditoría técnica.
+- [STRICT] **Trazabilidad:** El reporte de tests debe vincularse al ticket, tarea o decisión de arquitectura (`decision-log.md`) que motivó el cambio.
+- [GUIDE] **Cobertura Visual:** Para cambios en la UI, el reporte debe incluir capturas de pantalla o grabaciones que demuestren que los componentes responden correctamente a los estados de éxito/error validados en los tests.
+- [STRICT] **Sincronización:** Los resultados de las pruebas y las nuevas reglas detectadas deben volcarse al sistema de conocimiento central (NotebookLM) para asegurar que la "buena programación" se mantenga actualizada.

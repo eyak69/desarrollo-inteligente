@@ -48,6 +48,25 @@ esto y lo trata centralizado.
 | UPSTREAM_UNAVAILABLE  | 502  | upstream caído                          |
 | SERVICE_UNAVAILABLE   | 503  | servicio en mantenimiento               |
 
+## Versionado de API
+
+- [STRICT] La versión va en el path: `/api/v1/users`, `/api/v2/users`. No en headers ni en querystring.
+- [STRICT] La versión actual es `v1`. No crear `v2` sin entrada en el decision log que justifique el breaking change.
+- [GUIDE] Regla de deprecación: una versión vieja se mantiene activa mínimo **3 meses** tras publicar la nueva. Durante ese período devuelve el header `Deprecation: true` y `Sunset: <fecha ISO>`.
+- [BLOCKER] No hacer breaking changes dentro de una misma versión. Agregar campos es retrocompatible; eliminar o renombrar campos no lo es.
+
+### Qué es un breaking change
+
+| Cambio | Breaking? |
+|--------|-----------|
+| Agregar campo nuevo en response | No |
+| Agregar endpoint nuevo | No |
+| Eliminar campo de response | **Sí** |
+| Renombrar campo | **Sí** |
+| Cambiar tipo de campo | **Sí** |
+| Cambiar semántica de un `code` de error | **Sí** |
+| Hacer obligatorio un campo opcional | **Sí** |
+
 ## Implementación sugerida
 
 - Una clase `AppError(code, httpStatus, message, details?)` en `/server/src/errors/`.

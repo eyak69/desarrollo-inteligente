@@ -106,3 +106,98 @@ riesgo sin necesitar aprobación, mientras protege las áreas críticas
 ### Consecuencias
 Requiere que cada regla nueva declare su severidad. Las reglas sin declaración
 se tratan como STRICT por defecto.
+
+---
+
+## 2026-05-06 — Formularios: React Hook Form + Zod
+
+### Contexto
+El stack frontend necesita una estrategia unificada para formularios. Las
+opciones evaluadas fueron: estado manual con `useState` por campo, Formik,
+y React Hook Form.
+
+### Decisión
+React Hook Form con `zodResolver`. El mismo schema Zod que valida el backend
+se reutiliza (o se replica) en el frontend para validación síncrona.
+
+### Motivo
+React Hook Form tiene mejor performance que Formik (uncontrolled inputs,
+mínimo re-render). Integrar Zod via `zodResolver` elimina la duplicación
+de reglas de validación: un solo schema define el tipo TypeScript y las
+reglas de error. Formik fue descartado por verbosidad y peor integración
+con TypeScript estricto.
+
+### Consecuencias
+`useState` por campo está prohibido en formularios. Todo formulario nuevo
+debe usar `useForm` + `zodResolver`. El costo es aprender la API de RHF,
+que difiere de formularios controlados tradicionales.
+
+---
+
+## 2026-05-06 — Estado cliente: Context API (sin Redux ni Zustand)
+
+### Contexto
+TanStack Query cubre el estado de servidor. Queda definir cómo manejar el
+estado de UI global (usuario autenticado, tema, notificaciones).
+
+### Decisión
+React Context con Providers específicos por dominio. Redux y Zustand están
+prohibidos salvo autorización explícita.
+
+### Motivo
+El estado global de UI en estos proyectos es bajo volumen y poco frecuente
+en actualizaciones. Context es suficiente y no agrega dependencias. Redux
+agrega boilerplate significativo sin beneficio para este perfil de app.
+Zustand es más liviano pero introduce una dependencia y un patrón
+que el equipo no conoce de forma uniforme.
+
+### Consecuencias
+Si un proyecto escala a estado global complejo (muchas actualizaciones
+frecuentes, varios slices), será necesario reevaluar. Se documenta la
+decisión para que esa conversación sea consciente, no accidental.
+
+---
+
+## 2026-05-06 — Naming: snake_case en DB, camelCase en API y frontend
+
+### Contexto
+La base de datos usa `snake_case` por convención SQL estándar. El frontend
+y las APIs REST modernas usan `camelCase`. Había que decidir dónde ocurre
+la transformación.
+
+### Decisión
+La transformación `snake_case → camelCase` ocurre en el repository o service
+del backend. El controller y el frontend siempre trabajan con `camelCase`.
+
+### Motivo
+Centralizar la transformación en una sola capa evita que el frontend conozca
+el esquema interno de la base de datos. Si se renombra una columna, solo
+cambia el repository. El controller y el frontend no necesitan actualizarse.
+
+### Consecuencias
+Los repositorios tienen la responsabilidad explícita del mapeo. Knex no hace
+esto automáticamente: se configura con `postProcessResponse` o se mapea
+manualmente en cada método.
+
+---
+
+## 2026-05-06 — Estrategia de borrado: Soft Delete obligatorio
+
+### Contexto
+En sistemas administrativos, los registros borrados suelen necesitarse para
+auditoría, recuperación de errores o historial. El borrado físico es
+irreversible.
+
+### Decisión
+Todos los borrados son lógicos (`deleted_at = NOW()`). El borrado físico
+está prohibido salvo tablas temporales o logs de sistema, y requiere
+justificación en este log.
+
+### Motivo
+Facilita auditoría, permite recovery de errores sin restaurar backups, y
+simplifica la lógica de "papelera" si se necesita en el futuro. El costo
+de storage es mínimo para el volumen de datos que manejan estos proyectos.
+
+### Consecuencias
+Todos los queries de listado deben filtrar `WHERE deleted_at IS NULL`.
+`BaseRepository` encapsula este filtro para evitar omisiones accidentales.

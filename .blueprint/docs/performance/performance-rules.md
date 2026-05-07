@@ -25,6 +25,18 @@
 - Orden en backend.
 - Exportación pesada desde backend, no desde navegador.
 
-## Regla
+## Pruebas de Carga (Load Testing)
 
-Si una operación puede traer más de 1000 registros, diseñarla como operación server-side.
+- **Herramienta:** [k6](https://k6.io/).
+- **Estrategia:**
+    1. **Smoke Test:** Validar estabilidad con carga mínima (5-10 VUs).
+    2. **Load Test:** Validar comportamiento bajo carga esperada (50-100 VUs).
+    3. **Stress Test:** Encontrar el punto de rotura del sistema.
+- **Métricas Clave (KPIs):**
+    - **P95 Latency:** < 500ms para endpoints críticos.
+    - **Error Rate:** < 1% bajo carga normal.
+
+## Reglas
+
+- [STRICT] Si una operación puede traer más de 1000 registros, diseñarla como operación server-side.
+- [STRICT] Todo nuevo endpoint crítico de negocio debe pasar un Smoke Test de k6 antes de promoverse a producción.

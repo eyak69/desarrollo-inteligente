@@ -2,6 +2,8 @@
 
 ## Code (TypeScript)
 
+Todas las convenciones de esta tabla son `[STRICT]`. Desviarse requiere justificación explícita.
+
 | Cosa                       | Caso             | Ejemplo                       |
 |----------------------------|------------------|-------------------------------|
 | Variables, funciones       | camelCase        | `getUserById`                 |
@@ -42,9 +44,25 @@
   repository/service, no en el controller ni en el frontend.
 - [STRICT] El frontend siempre habla camelCase.
 
+## Interfaces y tipos (TypeScript)
+
+| Cosa | Convención | Ejemplo |
+|------|-----------|---------|
+| Shape de objeto de dominio (lo que maneja el service) | PascalCase sin prefijo | `User`, `Order`, `Idea` |
+| Shape de fila de DB (lo que devuelve el repository) | PascalCase + sufijo `DB` | `UserDB`, `OrderDB` |
+| Shape de request body de API | PascalCase + sufijo `DTO` | `CreateUserDTO`, `UpdateOrderDTO` |
+| Shape de response de API | PascalCase + sufijo `DTO` | `UserDTO`, `OrderListDTO` |
+| Props de componente React | PascalCase + sufijo `Props` | `UserCardProps`, `FormFieldProps` |
+| Enum | PascalCase | `OrderStatus`, `UserRole` |
+| Valores de enum | UPPER_SNAKE_CASE | `OrderStatus.PENDING`, `UserRole.ADMIN` |
+
+- [STRICT] No usar prefijo `I` para interfaces (ej: `IUser`). Antipatrón en TypeScript moderno.
+- [STRICT] No usar `type` y `interface` indistintamente: usar `interface` para shapes de objetos, `type` para unions, aliases e intersecciones.
+- [GUIDE] Los tipos `DB` nunca deben salir del repositorio hacia el controller o el frontend. El repository transforma `UserDB → UserDTO` o `UserDB → User`.
+
 ## Branches y commits
 
-Ver `docs/git/git-rules.md`.
+Ver `docs/git/git-rules.md` para las reglas completas.
 
-- Branches: `feature/<kebab-case>`, `fix/<kebab-case>`, `chore/<kebab-case>`.
-- Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`...).
+- [STRICT] Branches: `feature/<kebab-case>`, `fix/<kebab-case>`, `chore/<kebab-case>`.
+- [BLOCKER] Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`...). Sin commits con mensaje vacío o genérico ("fix", "cambios", "wip").

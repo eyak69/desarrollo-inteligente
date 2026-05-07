@@ -81,10 +81,52 @@ Este documento registra la evolución técnica, los errores detectados y las dec
 
 ---
 
+## [2026-05-07] - Infraestructura de Testing y Resiliencia (v0.8.0)
+
+### 🏛️ Decisiones de Arquitectura
+
+1.  **Unificación de Testing con Vitest**:
+    - **Decisión:** Se adoptó **Vitest** como motor único de ejecución de pruebas para el monorepo (Client & Server).
+    - **Motivo:** Velocidad de ejecución y compatibilidad nativa con TypeScript/ESM sin la sobrecarga de configuración de Jest.
+2.  **Validación de Carga con k6**:
+    - **Decisión:** Implementación de **k6** para pruebas de carga.
+    - **Motivo:** Permite definir escenarios de carga mediante código JS, facilitando la integración en el ciclo de vida del desarrollador y CI/CD.
+3.  **Implementación de Soft Delete (Borrado Lógico)**:
+    - **Decisión:** Se sustituyó el borrado físico por una columna `deleted_at`.
+    - **Motivo:** Preservar la integridad referencial y permitir la recuperación de datos ante errores accidentales del usuario.
+4.  **Refactorización a Knex Query Builder**:
+    - **Decisión:** Se abandonaron las consultas SQL raw en favor del Query Builder de Knex en el repositorio de ideas.
+    - **Motivo:** Mejor manejo de valores opcionales (evitando errores de bindings indefinidos) y mayor seguridad contra inyecciones SQL.
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Protección de Datos en Test:** Se estableció la regla de no ejecutar pruebas de carga contra la base de datos de producción o desarrollo local sin un esquema de aislamiento (Uso de transacciones o DBs efímeras).
+2.  **Índices para Soft Delete:** Se añadió un índice en la columna `deleted_at` para asegurar que las consultas de listado (filtrando nulos) mantengan un rendimiento O(log n).
+
+### 💡 Aprendizajes y "Gotchas"
+
+- **Impacto de Docker en Latencia:** Las pruebas de carga iniciales deben considerar que `host.docker.internal` añade un salto de red virtualizado que no representa fielmente el entorno de producción Cloud.
+- **Fragilidad de SQL Raw:** El uso de `db.raw` con MySQL2 es propenso a errores si los objetos de entrada contienen campos opcionales (`undefined`). El Query Builder de Knex gestiona estos casos de forma más transparente convirtiendo `undefined` en `NULL` o simplemente omitiendo la columna si no es requerida.
+
+---
+
 ## Próximos Pasos (Deuda Técnica)
 - [x] Configurar el archivo `.github/workflows/deploy.yml`.
 - [x] Ejecutar migraciones y seeds iniciales.
 - [x] Sincronizar UI con Pantalla Final de Stitch (`7c76`).
-- [ ] Implementar **Soft Delete** en la tabla `ideas`.
+- [x] Implementar **Soft Delete** en la tabla `ideas`.
 - [ ] Agregar un sistema de **Notificaciones (Toasts)** para feedback del ABM.
 - [ ] Implementar **Bottom Navigation** funcional.
+- [/] Implementar cobertura de tests funcionales (>80% en servicios críticos).
+- [ ] Implementar Smoke Tests de carga para endpoints de escritura.
+
+---
+
+## 🏛️ Hito: Unificación de Gobernanza (v1.3.1)
+
+Se ha realizado una auditoría completa del Blueprint. El usuario ha elevado el estándar aplicando etiquetas de severidad (`[BLOCKER]`, `[STRICT]`) a todas las capas de documentación.
+
+### Mejoras Realizadas:
+1.  **Refactorización de Datos:** `BaseRepository` ahora usa Inyección de Dependencias (Knex por constructor), permitiendo entornos de test más flexibles y aislados.
+2.  **Blindaje de UI:** Se han establecido prohibiciones explícitas contra `alert()` y `window.confirm()` en favor de Sonner, documentando duraciones y jerarquías.
+3.  **Sincronización Código-Doc:** Se ha validado que el código real refleja exactamente lo que dice la documentación de arquitectura.

@@ -25,9 +25,10 @@ Que todas las aplicaciones parezcan parte del mismo producto.
 
 ## Herramientas obligatorias
 
-- **Stitch:** Es la herramienta mandatoria para la generación de pantallas, prototipos y componentes visuales.
-- **Implementación:** Toda pantalla generada en Stitch debe implementar estrictamente lo definido en esta documentación (Layout, Componentes, Mobile-First y Seguridad).
-- **Consistencia:** El proyecto en Stitch debe llevar el mismo nombre que el proyecto actual en Antigravity para mantener la trazabilidad.
+- [STRICT] **Stitch:** Herramienta oficial de Antigravity para generación de pantallas, prototipos y componentes visuales. Toda pantalla nueva se diseña primero en Stitch antes de implementarse en código.
+- [STRICT] **Consistencia de proyecto:** El proyecto en Stitch lleva el mismo nombre que el proyecto en Antigravity para mantener trazabilidad diseño ↔ código.
+- [STRICT] **Fidelidad de implementación:** Toda pantalla generada en Stitch debe implementarse estrictamente según lo definido en esta documentación (Layout, Componentes, Mobile-First). No se improvisan variaciones visuales en código.
+- [GUIDE] **Flujo de trabajo:** Diseño en Stitch → revisión → implementación en React con componentes del design system. El código nunca adelanta al diseño en features nuevas.
 
 ## Prioridades
 

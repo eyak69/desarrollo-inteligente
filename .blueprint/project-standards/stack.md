@@ -48,6 +48,14 @@
 - Librerías UI alternativas
 - Frameworks experimentales
 
+## Estado en el backend
+
+El stack actual no incluye capa de caché en memoria (Redis, Memcached) ni store de sesiones externo. La gestión de estado en el backend se limita a:
+
+- [STRICT] **Estado de sesión:** En cookies `httpOnly` firmadas. Sin estado en memoria del proceso Node (no compatible con múltiples instancias).
+- [STRICT] **Estado transaccional:** En la base de datos. No usar variables de módulo para almacenar estado mutable entre requests.
+- [GUIDE] Si un proyecto requiere Redis u otro store externo, debe registrarse como decisión en `docs/decision-log.md` antes de instalarlo.
+
 ## Reglas de Integridad Técnica
 
 - **Integridad de Dependencias:** Prohibido importar librerías (`import`) que no estén declaradas en el `package.json`. Se debe verificar la existencia y compatibilidad de versiones antes de codificar.

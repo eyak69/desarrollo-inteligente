@@ -4,6 +4,10 @@ Este archivo es el punto de entrada obligatorio para Antigravity.
 
 Antes de generar o modificar código, leer en este orden:
 
+## Inicio rápido
+
+0. `00-start-here/day-one.md`
+
 ## Operación e instrucciones de IA
 
 1. `00-start-here/antigravity-master-prompt.md`
@@ -38,6 +42,7 @@ Antes de generar o modificar código, leer en este orden:
 18. `docs/backend/backend-rules.md`
 19. `docs/database/database-rules.md`
 20. `docs/mobile/mobile-rules.md`
+21. `docs/architecture/repository-rules.md`
 
 ## Convenciones transversales
 
@@ -47,20 +52,40 @@ Antes de generar o modificar código, leer en este orden:
 24. `docs/conventions/pagination.md`
 25. `docs/conventions/dates-timezones.md`
 26. `docs/conventions/money.md`
+27. `docs/conventions/enforcement.md`
+28. `docs/conventions/quick-reference.md`
+29. `docs/conventions/troubleshooting.md`
+30. `docs/conventions/full-stack-example.md`
+
+## UI
+
+22. `docs/ui/notification-rules.md`
 
 ## Calidad y plataforma
 
-27. `docs/testing/testing-rules.md`
-28. `docs/performance/performance-rules.md`
-29. `docs/observability/logging.md`
-30. `docs/accessibility/a11y-rules.md`
-31. `docs/uploads/file-uploads.md`
-32. `docs/deployment/deployment-rules.md`
-33. `docs/git/git-rules.md`
+23. `docs/testing/testing-rules.md`
+24. `docs/performance/performance-rules.md`
+25. `docs/observability/logging.md`
+26. `docs/accessibility/a11y-rules.md`
+27. `docs/uploads/file-uploads.md`
+28. `docs/deployment/deployment-rules.md`
+29. `docs/git/git-rules.md`
+
+## Templates y prompts
+
+30. `templates/checklists/new-feature-checklist.md`
+31. `templates/checklists/code-review-checklist.md`
+32. `templates/checklists/definition-of-done.md`
+33. `templates/prompts/create-new-endpoint.md`
+34. `templates/prompts/create-new-screen.md`
+35. `templates/prompts/create-new-migration.md`
+36. `templates/prompts/bug-fix.md`
+37. `templates/prompts/refactor.md`
+38. `templates/prompts/migrate-screen-to-design-system.md`
 
 ## Historial
 
-34. `docs/decision-log.md`
+39. `docs/decision-log.md`
 
 ---
 
