@@ -9,11 +9,7 @@ export interface IdeaDTO {
 }
 
 export class IdeaService {
-  private repository: IdeaRepository;
-
-  constructor() {
-    this.repository = new IdeaRepository();
-  }
+  constructor(private readonly repository: IdeaRepository) {}
 
   async listIdeas(): Promise<IdeaDTO[]> {
     const ideas = await this.repository.getAll();
@@ -50,5 +46,20 @@ export class IdeaService {
 
   async deleteIdea(id: string): Promise<void> {
     await this.repository.delete(id);
+  }
+
+  async listArchivedIdeas(): Promise<IdeaDTO[]> {
+    const ideas = await this.repository.getArchived();
+    return ideas.map((idea: IdeaDB) => ({
+      id: idea.id,
+      title: idea.title,
+      description: idea.description,
+      complexity: idea.complexity,
+      createdAt: idea.created_at instanceof Date ? idea.created_at.toISOString() : new Date().toISOString(),
+    }));
+  }
+
+  async restoreIdea(id: string): Promise<void> {
+    await this.repository.restore(id);
   }
 }

@@ -27,3 +27,12 @@ export const updateIdea = async (id: string, idea: Partial<Idea>): Promise<void>
 export const deleteIdea = async (id: string): Promise<void> => {
   await axios.delete(`${API_URL}/ideas/${id}`);
 };
+
+export const getArchivedIdeas = async (): Promise<Idea[]> => {
+  const { data } = await axios.get(`${API_URL}/ideas/archived`);
+  return data;
+};
+
+export const restoreIdea = async (id: string): Promise<void> => {
+  await axios.post(`${API_URL}/ideas/${id}/restore`);
+};

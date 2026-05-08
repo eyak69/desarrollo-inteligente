@@ -3,11 +3,7 @@ import { IdeaService } from '@/services/idea.service';
 import { createIdeaSchema, updateIdeaSchema } from '@/schemas/idea.schema';
 
 export class IdeaController {
-  private service: IdeaService;
-
-  constructor() {
-    this.service = new IdeaService();
-  }
+  constructor(private readonly service: IdeaService) {}
 
   getAll = async (req: Request, res: Response) => {
     try {
@@ -53,6 +49,27 @@ export class IdeaController {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Error al eliminar la idea' });
+    }
+  };
+
+  getArchived = async (req: Request, res: Response) => {
+    try {
+      const archived = await this.service.listArchivedIdeas();
+      res.json(archived);
+    } catch (error) {
+      console.error('Error in IdeaController.getArchived:', error);
+      res.status(500).json({ error: 'Error al obtener el archivo' });
+    }
+  };
+
+  restore = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await this.service.restoreIdea(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error in IdeaController.restore:', error);
+      res.status(500).json({ error: 'Error al restaurar la idea' });
     }
   };
 }

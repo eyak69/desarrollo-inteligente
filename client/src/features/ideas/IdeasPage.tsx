@@ -17,7 +17,10 @@ import {
   Archive as ArchiveIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
-import { getIdeas, createIdea, updateIdea, deleteIdea, Idea } from '@/services/ideaService';
+import { 
+  getIdeas, createIdea, updateIdea, deleteIdea, 
+  getArchivedIdeas, restoreIdea, Idea 
+} from '@/services/ideaService';
 import IdeaDialog from './IdeaDialog';
 import { toast } from 'sonner';
 
@@ -38,6 +41,13 @@ const IdeasPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['ideas'],
     queryFn: getIdeas,
+    enabled: navValue === 0,
+  });
+
+  const { data: archivedData, isLoading: isLoadingArchived } = useQuery({
+    queryKey: ['ideas-archived'],
+    queryFn: getArchivedIdeas,
+    enabled: navValue === 1,
   });
 
   // Filtrado reactivo para el buscador
@@ -82,6 +92,7 @@ const IdeasPage = () => {
     mutationFn: deleteIdea,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] });
+      queryClient.invalidateQueries({ queryKey: ['ideas-archived'] });
       toast.success('Idea eliminada', {
         description: 'El registro se ha borrado lógicamente del sistema.'
       });
@@ -90,6 +101,24 @@ const IdeasPage = () => {
       toast.error('No se pudo eliminar la idea');
     }
   });
+
+  const restoreMutation = useMutation({
+    mutationFn: restoreIdea,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ideas'] });
+      queryClient.invalidateQueries({ queryKey: ['ideas-archived'] });
+      toast.success('Idea restaurada', {
+        description: 'El registro vuelve a estar activo en el laboratorio.'
+      });
+    },
+    onError: () => {
+      toast.error('Error al restaurar la idea');
+    }
+  });
+
+  const handleRestore = (id: string) => {
+    restoreMutation.mutate(id);
+  };
 
   const handleEdit = (idea: Idea) => {
     setSelectedIdea(idea);
@@ -248,78 +277,139 @@ const IdeasPage = () => {
         </Stack>
       )}
       
-      {isMobile ? (
-        <Stack spacing={2.5}>
-          {filteredIdeas.map((idea: Idea) => (
-            <Card 
-              key={idea.id} 
-              sx={{ 
-                bgcolor: '#0a0a0a', 
-                borderRadius: 4,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                transition: '0.2s',
-                '&:active': { transform: 'scale(0.98)' }
-              }}
-            >
-              <CardContent sx={{ pt: 3, pb: 1 }}>
-                <Chip 
-                  label={idea.complexity.toUpperCase()} 
-                  size="small" 
-                  color={getComplexityColor(idea.complexity)} 
-                  sx={{ fontWeight: 900, fontSize: '0.6rem', mb: 1.5, height: 20 }}
-                />
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#fff', mb: 1 }}>
-                  {idea.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1 }}>
-                  {idea.description}
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ justifyContent: 'flex-start', px: 2, pb: 2, pt: 1 }}>
-                <Button 
-                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-                  onClick={() => handleEdit(idea)}
-                  sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
+      {/* Contenido Dinámico basado en Navegación */}
+      {navValue === 0 && (
+        isMobile ? (
+          <Stack spacing={2.5}>
+            {filteredIdeas.map((idea: Idea) => (
+              <Card 
+                key={idea.id} 
+                sx={{ 
+                  bgcolor: '#0a0a0a', 
+                  borderRadius: 4,
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  transition: '0.2s',
+                  '&:active': { transform: 'scale(0.98)' }
+                }}
+              >
+                <CardContent sx={{ pt: 3, pb: 1 }}>
+                  <Chip 
+                    label={idea.complexity.toUpperCase()} 
+                    size="small" 
+                    color={getComplexityColor(idea.complexity)} 
+                    sx={{ fontWeight: 900, fontSize: '0.6rem', mb: 1.5, height: 20 }}
+                  />
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#fff', mb: 1 }}>
+                    {idea.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 1 }}>
+                    {idea.description}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'flex-start', px: 2, pb: 2, pt: 1 }}>
+                  <Button 
+                    startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => handleEdit(idea)}
+                    sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
+                  >
+                    EDITAR
+                  </Button>
+                  <Button 
+                    startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => handleDelete(idea.id)}
+                    sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
+                  >
+                    ELIMINAR
+                  </Button>
+                  <Box sx={{ flexGrow: 1 }} />
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
+                    AHORA
+                  </Typography>
+                </CardActions>
+              </Card>
+            ))}
+            {filteredIdeas.length === 0 && (
+              <Box sx={{ mt: 8, textAlign: 'center', opacity: 0.3 }}>
+                <Typography variant="h6">Sin resultados</Typography>
+              </Box>
+            )}
+          </Stack>
+        ) : (
+          <Box className="ag-theme-material-dark" sx={{ 
+            height: 600, 
+            width: '100%', 
+            borderRadius: 3, 
+            overflow: 'hidden',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
+            border: '1px solid rgba(255,255,255,0.05)'
+          }}>
+            <AgGridReact
+              rowData={data}
+              columnDefs={columnDefs}
+              defaultColDef={{ resizable: true, sortable: true }}
+              pagination={true}
+              paginationPageSize={10}
+              paginationPageSizeSelector={false}
+            />
+          </Box>
+        )
+      )}
+
+      {navValue === 1 && (
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'white', mb: 3 }}>
+            Archivo de Ideas
+          </Typography>
+          {isLoadingArchived ? (
+            <CircularProgress size={20} />
+          ) : (
+            <Stack spacing={2.5}>
+              {archivedData?.map((idea: Idea) => (
+                <Card 
+                  key={idea.id} 
+                  sx={{ 
+                    bgcolor: '#0a0a0a', 
+                    borderRadius: 4,
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    opacity: 0.8
+                  }}
                 >
-                  EDITAR
-                </Button>
-                <Button 
-                  startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
-                  onClick={() => handleDelete(idea.id)}
-                  sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
-                >
-                  ELIMINAR
-                </Button>
-                <Box sx={{ flexGrow: 1 }} />
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
-                  AHORA
-                </Typography>
-              </CardActions>
-            </Card>
-          ))}
-          {filteredIdeas.length === 0 && (
-            <Box sx={{ mt: 8, textAlign: 'center', opacity: 0.3 }}>
-              <Typography variant="h6">Sin resultados</Typography>
-            </Box>
+                  <CardContent sx={{ pt: 3, pb: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                      {idea.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.disabled">
+                      {idea.description}
+                    </Typography>
+                  </CardContent>
+                  <CardActions sx={{ px: 2, pb: 2 }}>
+                    <Button 
+                      startIcon={<LabIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => handleRestore(idea.id)}
+                      variant="outlined"
+                      size="small"
+                      sx={{ color: 'primary.main', borderColor: 'rgba(59, 130, 246, 0.3)' }}
+                    >
+                      RESTAURAR
+                    </Button>
+                  </CardActions>
+                </Card>
+              ))}
+              {archivedData?.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 5, opacity: 0.3 }}>
+                  <Typography>No hay ideas en el archivo.</Typography>
+                </Box>
+              )}
+            </Stack>
           )}
-        </Stack>
-      ) : (
-        <Box className="ag-theme-material-dark" sx={{ 
-          height: 600, 
-          width: '100%', 
-          borderRadius: 3, 
-          overflow: 'hidden',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
-          border: '1px solid rgba(255,255,255,0.05)'
-        }}>
-          <AgGridReact
-            rowData={data}
-            columnDefs={columnDefs}
-            defaultColDef={{ resizable: true, sortable: true }}
-            pagination={true}
-            paginationPageSize={10}
-            paginationPageSizeSelector={false}
-          />
+        </Box>
+      )}
+
+      {navValue === 2 && (
+        <Box sx={{ textAlign: 'center', py: 10, opacity: 0.5 }}>
+          <SettingsIcon sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h6">Configuración</Typography>
+          <Typography variant="body2">Ajustes del sistema y del perfil.</Typography>
         </Box>
       )}
 

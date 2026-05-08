@@ -14,15 +14,19 @@ vi.mock('@/services/idea.service', () => {
   };
 });
 
+import { IdeaService } from '@/services/idea.service';
+
 describe('IdeaController', () => {
   let controller: IdeaController;
+  let service: IdeaService;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let responseJson: any;
   let responseStatus: number;
 
   beforeEach(() => {
-    controller = new IdeaController();
+    service = new IdeaService({} as any); // El repo no importa aquí por el mock de la clase
+    controller = new IdeaController(service);
     responseJson = null;
     responseStatus = 200;
 

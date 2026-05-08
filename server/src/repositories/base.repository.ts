@@ -79,6 +79,27 @@ export abstract class BaseRepository<T extends { id: string }> {
   }
 
   /**
+   * Obtiene solo los registros eliminados (Archivo)
+   */
+  async getArchived(): Promise<T[]> {
+    return this.db<T>(this.tableName)
+      .whereNotNull('deleted_at')
+      .orderBy('deleted_at', 'desc');
+  }
+
+  /**
+   * Restaura un registro eliminado lógicamente
+   */
+  async restore(id: string): Promise<void> {
+    await this.db(this.tableName)
+      .where({ id })
+      .update({ 
+        deleted_at: null,
+        updated_at: this.db.fn.now()
+      });
+  }
+
+  /**
    * Helper para extender consultas personalizadas
    */
   protected query() {
