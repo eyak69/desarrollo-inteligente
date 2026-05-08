@@ -22,6 +22,8 @@ import {
   getArchivedIdeas, restoreIdea, Idea 
 } from '@/services/ideaService';
 import IdeaDialog from './IdeaDialog';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { useConfirm } from '@/hooks/useConfirm';
 import { toast } from 'sonner';
 
 // Importar estilos de AG Grid
@@ -138,20 +140,25 @@ const IdeasPage = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    // Aplicación de Máxima: "No preguntar, actuar y permitir deshacer"
-    deleteMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success('Idea archivada', {
-          description: 'Podés recuperarla desde la sección de Archivo.',
-          action: {
-            label: 'Deshacer',
-            onClick: () => handleRestore(id)
-          },
-          duration: 6000 // Damos tiempo suficiente para arrepentirse
-        });
-      }
+  const { confirm, handleConfirm, handleCancel, open: confirmOpen, options: confirmOptions } = useConfirm();
+
+  const handleDelete = async (id: string) => {
+    // Aplicación de la nueva Máxima: "Diálogo Standard para preguntas necesarias"
+    const confirmed = await confirm({
+      title: '¿Archivar idea?',
+      message: 'Esta idea se moverá al archivo. Podrás verla y restaurarla cuando quieras.',
+      confirmText: 'Archivar',
+      cancelText: 'Cancelar',
+      severity: 'warning'
     });
+
+    if (confirmed) {
+      deleteMutation.mutate(id, {
+        onSuccess: () => {
+          toast.success('Idea archivada');
+        }
+      });
+    }
   };
 
   const getComplexityColor = (complexity: string): any => {
@@ -447,6 +454,17 @@ const IdeasPage = () => {
         onClose={() => setDialogOpen(false)}
         onSave={handleSave}
         initialData={selectedIdea}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmOptions?.title || ''}
+        message={confirmOptions?.message || ''}
+        confirmText={confirmOptions?.confirmText}
+        cancelText={confirmOptions?.cancelText}
+        severity={confirmOptions?.severity}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </Box>
   );

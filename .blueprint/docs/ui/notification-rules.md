@@ -4,12 +4,17 @@ El Blueprint utiliza un sistema de notificaciones no obstructivas (Toasts) para 
 
 ## Estándar Tecnológico
 
-- [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso".
-- [BLOCKER] **Prohibición Absoluta:** Queda estrictamente prohibido el uso de `window.alert()`, `window.confirm()` y `window.prompt()`. Estos componentes nativos rompen la estética premium y violan la máxima de interacción al exigir una respuesta del usuario.
+- [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso". Se prioriza la acción directa con reversibilidad (Undo).
+- [BLOCKER] **Uso de Diálogo Estándar:** Cuando una acción es irreversible, altamente crítica o requiere una decisión consciente (ej: Hard Delete de datos sensibles), se debe utilizar el componente `ConfirmDialog` estándar del Blueprint.
+- [BLOCKER] **Prohibición Nativa:** Queda terminantemente prohibido el uso de `window.confirm()`. Si hay que preguntar, se usa el estándar de la casa.
 
-## Paradigma de Acción Directa
+## Guía de Selección: Undo vs Diálogo
 
-El Blueprint Maestro opera bajo el principio de **"Actuar Primero, Permitir Deshacer Siempre"**. 
+| Situación | Patrón Recomendado | Feedback |
+| :--- | :--- | :--- |
+| Acción cotidiana (Borrar idea, archivar) | **Acción Directa + Undo** | Toast con botón "Deshacer" |
+| Acción de alto riesgo (Vaciar papelera, reset) | **Diálogo Estándar** | `ConfirmDialog` Premium |
+| Configuración de sistema | **Auto-save** | Indicador visual discreto |
 
 ## Jerarquía de Notificaciones
 
