@@ -138,10 +138,20 @@ const IdeasPage = () => {
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("¿Estás seguro de eliminar esta idea?")) {
-      deleteMutation.mutate(id);
-    }
+  const handleDelete = (id: string) => {
+    // Aplicación de Máxima: "No preguntar, actuar y permitir deshacer"
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success('Idea archivada', {
+          description: 'Podés recuperarla desde la sección de Archivo.',
+          action: {
+            label: 'Deshacer',
+            onClick: () => handleRestore(id)
+          },
+          duration: 6000 // Damos tiempo suficiente para arrepentirse
+        });
+      }
+    });
   };
 
   const getComplexityColor = (complexity: string): any => {

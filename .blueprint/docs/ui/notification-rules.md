@@ -4,15 +4,12 @@ El Blueprint utiliza un sistema de notificaciones no obstructivas (Toasts) para 
 
 ## Estándar Tecnológico
 
-- [BLOCKER] **Motor:** [Sonner](https://sonner.emilkowal.ski/). No usar `alert()`, `window.confirm()` ni librerías alternativas de toast.
-- [STRICT] **Configuración obligatoria:** `theme="dark"`, posición `top-right`, `richColors={true}`.
+- [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso".
+- [BLOCKER] **Prohibición Absoluta:** Queda estrictamente prohibido el uso de `window.alert()`, `window.confirm()` y `window.prompt()`. Estos componentes nativos rompen la estética premium y violan la máxima de interacción al exigir una respuesta del usuario.
 
-```tsx
-// En el root de la app (App.tsx o Layout.tsx)
-import { Toaster } from 'sonner';
+## Paradigma de Acción Directa
 
-<Toaster theme="dark" position="top-right" richColors />
-```
+El Blueprint Maestro opera bajo el principio de **"Actuar Primero, Permitir Deshacer Siempre"**. 
 
 ## Jerarquía de Notificaciones
 
