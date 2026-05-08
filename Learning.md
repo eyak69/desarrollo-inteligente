@@ -115,18 +115,31 @@ Este documento registra la evolución técnica, los errores detectados y las dec
 - [x] Ejecutar migraciones y seeds iniciales.
 - [x] Sincronizar UI con Pantalla Final de Stitch (`7c76`).
 - [x] Implementar **Soft Delete** en la tabla `ideas`.
-- [ ] Agregar un sistema de **Notificaciones (Toasts)** para feedback del ABM.
-- [ ] Implementar **Bottom Navigation** funcional.
+- [x] Agregar un sistema de **Notificaciones (Toasts)** para feedback del ABM.
+- [x] Implementar **Bottom Navigation** funcional.
+- [x] Implementar política **Zero Interruption** (Acción Directa + Undo).
+- [x] Blindar persistencia Docker (Volumes para Logs/Uploads).
 - [/] Implementar cobertura de tests funcionales (>80% en servicios críticos).
 - [ ] Implementar Smoke Tests de carga para endpoints de escritura.
 
 ---
 
-## 🏛️ Hito: Unificación de Gobernanza (v1.3.1)
+## [2026-05-07] - Consolidación Zero Interruption y Estética Premium (v1.5.0)
 
-Se ha realizado una auditoría completa del Blueprint. El usuario ha elevado el estándar aplicando etiquetas de severidad (`[BLOCKER]`, `[STRICT]`) a todas las capas de documentación.
+### 🏛️ Decisiones de Arquitectura
 
-### Mejoras Realizadas:
-1.  **Refactorización de Datos:** `BaseRepository` ahora usa Inyección de Dependencias (Knex por constructor), permitiendo entornos de test más flexibles y aislados.
-2.  **Blindaje de UI:** Se han establecido prohibiciones explícitas contra `alert()` y `window.confirm()` en favor de Sonner, documentando duraciones y jerarquías.
-3.  **Sincronización Código-Doc:** Se ha validado que el código real refleja exactamente lo que dice la documentación de arquitectura.
+1.  **Erradicación de Diálogos Nativos**:
+    - **Decisión:** Prohibición absoluta de `alert()` y `confirm()`. Sustitución por **Acción Directa + Undo** y `ConfirmDialog` premium.
+    - **Motivo:** Eliminar la fricción cognitiva y mejorar la percepción de velocidad de la app.
+2.  **Estandarización de Generación (Stitch Maxima)**:
+    - **Decisión:** Creación de un "Master Prompt" para Stitch.
+    - **Motivo:** Asegurar que cualquier generación futura de la IA respete el estándar Obsidian Premium sin intervención manual constante.
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Persistencia Blindada (Docker)**: Se declararon volúmenes específicos para `/logs` y `/uploads` en el host. Esto cumple con la Regla 4 de "lo que no está en un volumen, no existe".
+
+### 💡 Aprendizajes y "Gotchas"
+
+- **Importaciones en Hot Reload:** Un error de importación (`alpha` de MUI) puede causar un "White Screen" instantáneo que es difícil de detectar si no se revisa la consola del navegador inmediatamente tras el despliegue. **Lección:** Siempre validar las importaciones al aplicar estilos de alto nivel.
+- **Backdrop Filter Performance:** El uso masivo de `backdrop-filter: blur()` puede impactar el rendimiento en dispositivos móviles antiguos. Se debe monitorear el FPS en terminales de gama baja.

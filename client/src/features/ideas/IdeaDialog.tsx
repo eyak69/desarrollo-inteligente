@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, MenuItem, Box, useMediaQuery, useTheme 
+  Button, TextField, MenuItem, Box, useMediaQuery, useTheme, alpha 
 } from '@mui/material';
 import { Idea } from '@/services/ideaService';
 
@@ -41,6 +41,16 @@ const IdeaDialog = ({ open, onClose, onSave, initialData }: IdeaDialogProps) => 
       fullWidth 
       maxWidth="sm" 
       fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          bgcolor: alpha('#0c0c0e', 0.85),
+          backdropFilter: 'blur(20px)',
+          backgroundImage: 'none',
+          borderRadius: isMobile ? 0 : 4,
+          border: isMobile ? 'none' : '1px solid',
+          borderColor: alpha('#fff', 0.1),
+        }
+      }}
     >
       <DialogTitle sx={{ fontWeight: 700, bgcolor: isMobile ? 'background.paper' : 'transparent' }}>
         {initialData ? 'Editar Idea' : 'Nueva Idea de Sistema'}

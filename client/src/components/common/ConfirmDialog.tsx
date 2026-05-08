@@ -44,20 +44,26 @@ const ConfirmDialog = ({
     <Dialog 
       open={open} 
       onClose={onCancel}
+      slotProps={{
+        backdrop: {
+          sx: { backdropFilter: 'blur(8px)', bgcolor: 'rgba(0,0,0,0.5)' }
+        }
+      }}
       PaperProps={{
         sx: {
-          bgcolor: 'background.paper',
+          bgcolor: alpha('#0c0c0e', 0.8),
+          backdropFilter: 'blur(20px)',
           backgroundImage: 'none',
-          borderRadius: 3,
+          borderRadius: 4,
           border: '1px solid',
           borderColor: alpha('#fff', 0.1),
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
           p: 1
         }
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 800, color: 'white' }}>
           {title}
         </Typography>
       </DialogTitle>

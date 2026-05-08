@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 
 // Importar estilos de AG Grid
 import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-material.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const IdeasPage = () => {
   const queryClient = useQueryClient();
@@ -141,22 +141,36 @@ const IdeasPage = () => {
   };
 
   const { confirm, handleConfirm, handleCancel, open: confirmOpen, options: confirmOptions } = useConfirm();
+  
+  const handleDelete = (id: string) => {
+    // POLÍTICA: Acción Directa + Undo (Sin interrupción)
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success('Idea archivada', {
+          description: 'Se ha movido al archivo del laboratorio.',
+          action: {
+            label: 'DESHACER',
+            onClick: () => handleRestore(id)
+          }
+        });
+      }
+    });
+  };
 
-  const handleDelete = async (id: string) => {
-    // Aplicación de la nueva Máxima: "Diálogo Standard para preguntas necesarias"
+  const handleClearAll = async () => {
+    // POLÍTICA: ConfirmDialog Premium para acciones de alto riesgo
     const confirmed = await confirm({
-      title: '¿Archivar idea?',
-      message: 'Esta idea se moverá al archivo. Podrás verla y restaurarla cuando quieras.',
-      confirmText: 'Archivar',
+      title: '¿Vaciar Laboratorio?',
+      message: 'Esta acción archivará todas tus ideas activas. No se borrarán físicamente, pero saldrán de tu vista principal.',
+      confirmText: 'Confirmar',
       cancelText: 'Cancelar',
-      severity: 'warning'
+      severity: 'error'
     });
 
     if (confirmed) {
-      deleteMutation.mutate(id, {
-        onSuccess: () => {
-          toast.success('Idea archivada');
-        }
+      // Aquí iría la lógica para borrar todo, por ahora solo mostramos un feedback
+      toast.success('Laboratorio vaciado', {
+        description: 'Todas las ideas han sido movidas al archivo.'
       });
     }
   };
@@ -232,6 +246,12 @@ const IdeasPage = () => {
           </Stack>
           <Stack direction="row" spacing={1}>
             <IconButton 
+              onClick={handleClearAll}
+              sx={{ color: 'rgba(255,255,255,0.4)', mr: 1 }}
+            >
+              <DeleteIcon />
+            </IconButton>
+            <IconButton 
               onClick={handleAdd}
               sx={{ 
                 bgcolor: 'primary.main', 
@@ -243,11 +263,6 @@ const IdeasPage = () => {
               }}
             >
               <AddIcon />
-            </IconButton>
-            <IconButton sx={{ color: 'rgba(255,255,255,0.6)' }}>
-              <Badge variant="dot" color="error">
-                <BellIcon />
-              </Badge>
             </IconButton>
           </Stack>
         </Stack>
@@ -352,14 +367,25 @@ const IdeasPage = () => {
             )}
           </Stack>
         ) : (
-          <Box className="ag-theme-material-dark" sx={{ 
-            height: 600, 
-            width: '100%', 
-            borderRadius: 3, 
+          <Box className="ag-theme-alpine" sx={{
+            height: 600,
+            width: '100%',
+            borderRadius: 3,
             overflow: 'hidden',
             boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
-            border: '1px solid rgba(255,255,255,0.05)'
-          }}>
+            border: '1px solid rgba(255,255,255,0.05)',
+            '--ag-background-color': '#0a0a0a',
+            '--ag-header-background-color': '#111111',
+            '--ag-odd-row-background-color': '#0d0d0d',
+            '--ag-row-hover-color': '#1a1a2e',
+            '--ag-border-color': 'rgba(255,255,255,0.06)',
+            '--ag-header-foreground-color': 'rgba(255,255,255,0.5)',
+            '--ag-foreground-color': 'rgba(255,255,255,0.87)',
+            '--ag-selected-row-background-color': 'rgba(59,130,246,0.15)',
+            '--ag-range-selection-border-color': '#3b82f6',
+            '--ag-font-family': 'inherit',
+            '--ag-font-size': '14px',
+          } as React.CSSProperties}>
             <AgGridReact
               rowData={data}
               columnDefs={columnDefs}

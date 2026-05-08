@@ -4,7 +4,7 @@ El Blueprint utiliza un sistema de notificaciones no obstructivas (Toasts) para 
 
 ## Estándar Tecnológico
 
-- [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso". Se prioriza la acción directa con reversibilidad (Undo).
+- [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso". Se prioriza la acción directa con reversibilidad (Undo). Consultar la [Máxima de Stitch](file:///c:/Users/Cristian/OneDrive/Antigravity/desarrollo%20inteligente/.blueprint/docs/ui/stitch-maxima.md) para la generación de interfaces.
 - [BLOCKER] **Uso de Diálogo Estándar:** Cuando una acción es irreversible, altamente crítica o requiere una decisión consciente (ej: Hard Delete de datos sensibles), se debe utilizar el componente `ConfirmDialog` estándar del Blueprint.
 - [BLOCKER] **Prohibición Nativa:** Queda terminantemente prohibido el uso de `window.confirm()`. Si hay que preguntar, se usa el estándar de la casa.
 
