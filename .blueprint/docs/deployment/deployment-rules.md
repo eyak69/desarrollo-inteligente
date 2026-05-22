@@ -27,7 +27,7 @@
 - [BLOCKER] No incluir secretos en la imagen Docker. Las variables sensibles se inyectan en runtime via variables de entorno del orquestador.
 - [STRICT] Variables de configuración por entorno (dev, staging, prod): nunca hardcodeadas en la imagen.
 - [STRICT] Healthchecks declarados en el `Dockerfile` o `docker-compose.yml` para que Docker/Kubernetes detecte y reinicie contenedores colgados.
-- [GUIDE] Usar imágenes base oficiales de Node con tag de versión fija (ej: `node:20-alpine`). No usar `latest`.
+- [GUIDE] Usar imágenes base oficiales de Node con tag de versión fija (ej: `node:22-alpine`). No usar `latest`.
 - [GUIDE] Aplicar multi-stage builds para minimizar el tamaño de la imagen final: stage de build separado del stage de producción.
 
 ## Producción

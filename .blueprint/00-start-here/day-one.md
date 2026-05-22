@@ -22,7 +22,7 @@ El resto del blueprint se lee a medida que trabajás en cada área.
 ## 2. Configurar el entorno (15 min)
 
 ### Requisitos
-- Node.js 20+
+- Node.js 22+ (LTS)
 - npm 10+
 - Docker Desktop
 
