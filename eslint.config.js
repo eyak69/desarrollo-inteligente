@@ -53,6 +53,7 @@ export default tseslint.config(
     files: [
       'server/**/*.{ts,js}',
       'server/scripts/**/*.js',
+      'scripts/**/*.js',
       '.blueprint/**/*.js',
       'tests/**/*.js',
       'eslint.config.js'

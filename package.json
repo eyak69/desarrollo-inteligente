@@ -11,6 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts,.tsx",
     "blueprint:check": "npm run lint && cd client && npm run build",
+    "project:scaffold": "node scripts/scaffold-project.js",
     "prepare": "husky install"
   },
   "lint-staged": {

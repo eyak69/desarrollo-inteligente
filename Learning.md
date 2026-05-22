@@ -599,6 +599,27 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **El Flat Config de ESLint 9 se Aplica en Cascada**: A diferencia de las versiones antiguas de ESLint donde los archivos `.eslintrc` en subcarpetas sobreescribían localmente, el nuevo formato Flat Config aplica las reglas de manera global a menos que se restrinjan rigurosamente con los patrones de la propiedad `files`. Definir el contexto del compilador (`globals.node`) es imperativo para evitar que reglas de TypeScript intenten parsear Node puro.
 -   **Omitir Parámetros No Usados en Callbacks y Catch Blocks**: En versiones modernas de JavaScript y TypeScript, no es necesario nombrar variables no utilizadas. El uso de `catch {` (sin parámetro) y la firma de funciones flecha sin variables basura (como en `typeFilter`) mantiene el código limpio y robusto frente a reglas estrictas de linter sin tener que depender de prefijos artificiales como `_`.
 
+---
 
+## [2026-05-22] - Scaffolder Interactivo de Proyectos Nuevos (v2.7.0)
 
+### 🏛️ Decisiones de Arquitectura
 
+1.  **Script de Andamiaje Interactivo In-Place**:
+    -   **Decisión:** Se implementó el script `scripts/scaffold-project.js` que se ejecuta directamente sobre el repositorio clonado mediante `npm run project:scaffold`.
+    -   **Motivo:** Permitir el uso del repositorio como plantilla para nuevos desarrollos o migraciones, automatizando el renombrado de nombres, títulos, puertos y base de datos de manera interactiva sin dependencias de paquetes externos (Node nativo).
+    -   **Riesgo:** Si el usuario no tiene sus archivos confirmados en Git antes de correr el script y confirma los cambios, las modificaciones se aplican directamente en caliente, dificultando su reversión manual sin un `git checkout -- .`.
+
+2.  **Limpieza Profunda Opcional del Dominio**:
+    -   **Decisión:** Ofrecer en el script la opción interactiva de eliminar físicamente todas las referencias y archivos de la app de Ideas (`client/src/features/ideas`, controladores, repositorios, schemas, semillas y migraciones) reemplazándola con un layout de bienvenida limpio en MUI con estética Obsidian.
+    -   **Motivo:** Garantizar que los nuevos proyectos no arrastren lógica de negocio obsoleta y mantengan su coherencia con el Blueprint estructural.
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Cero Dependencias de Terceros para DX**: El script utiliza exclusivamente las APIs nativas de Node.js (`fs`, `path`, `readline`) para no requerir un `npm install` previo si el desarrollador clona el repositorio solo para inicializar un nuevo proyecto (Regla 14).
+2.  **Soporte de Linter en Configuración**: Se integró la ruta `scripts/**/*.js` en `eslint.config.js` bajo el entorno de Node.js para que el script scaffold mantenga una política de Zero Errors de linter.
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **Reemplazos en Texto Duro (Fragilidad de Drift)**: Los scripts de andamiaje in-place son propensos a desactualizarse si las constantes de configuración cambian de nombre en la plantilla (por ejemplo, si el puerto por defecto cambia en el código pero no en el script). La automatización requiere revisiones periódicas o un enfoque basado en archivos JSON de declaración de plantillas para mitigar la deuda técnica.
+-   **Eliminación Segura de Migraciones**: Al borrar migraciones de base de datos de forma dinámica, se debe filtrar en base a patrones semánticos para no eliminar archivos del sistema o de infraestructura compartida de forma accidental.
