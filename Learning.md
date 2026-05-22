@@ -493,3 +493,36 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **Alternativa B: Refactorización Estructural sin Modificación de Esquema (DB Plana)**:
     -   *Estrategia:* Ajustar la estructura del servidor a módulos cohesivos bajo `/server/src/modules/ideas/` con tests colocalizados, pero posponer la normalización de la base de datos a fases posteriores.
     -   *Riesgo:* Mantiene la deuda técnica de datos, acumulando mayor trabajo a futuro en base de datos.
+
+---
+
+## [2026-05-22] - Auditoría de Seguridad y Dependencias (Watchdog v2.3.0)
+
+### 🏛️ Decisiones de Arquitectura y Diagnóstico de Seguridad
+
+1.  **Monitoreo del Ciclo de Vida de Node.js**:
+    -   **Decisión:** Se detectó que Node.js 20 alcanzó su End-of-Life (EOL) el 30 de abril de 2026. Se definió planificar el upgrade de la imagen base de los contenedores Docker en el próximo ciclo de mantenimiento.
+    -   **Motivo:** Evitar la exposición a futuras vulnerabilidades sin parches oficiales en el servidor Node.
+    -   **Riesgo:** Posible incompatibilidad menor con APIs obsoletas de Node en dependencias de terceros si se realiza un upgrade directo.
+
+2.  **Mitigación de Conflicto de Dependencias (Vitest v4 vs Vite v5)**:
+    -   **Decisión:** Se diagnosticó un conflicto en las `peerDependencies` del frontend, donde `vitest` v4.1.5 requiere Vite 6+, pero se tiene Vite v5.4.21. Se decidió mantener la versión actual resuelta debido a que los tests se ejecutan correctamente, pero se documentó como riesgo de inconsistencia para instalaciones limpias sin `--legacy-peer-deps`.
+    -   **Motivo:** Evitar refactorizaciones costosas que rompan el build actual del cliente mientras se prepara el upgrade coordinado a Vite 6.x.
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Diagnóstico Real de Vulnerabilidades**:
+    -   Se verificó que el uso del lockfile (`package-lock.json`) resolvió versiones parchadas y seguras para dependencias críticas reportadas previamente con vulnerabilidades:
+        -   **Vite:** v5.4.21 instalada (libre de CVE-2025-31125, el cual fue parchado en v5.4.16).
+        -   **AG Grid:** v31.3.4 instalada (libre del Prototype Pollution CVE-2024-38996, que afecta a <=31.3.2).
+        -   **path-to-regexp (Express):** v0.1.13 instalada (libre del ReDoS CVE-2026-4867, corregido en v0.1.13).
+        -   **body-parser (Express):** v1.20.5 instalada (libre de DoS CVE-2025-13466, que afecta a v2.2.0).
+
+2.  **Riesgo en Configuración de Desarrollo Docker**:
+    -   Se identificó que el dev server del cliente corre con la opción `--host` en Docker. Aunque la versión actual de Vite está mitigada, exponer públicamente el dev server en redes abiertas sigue siendo un factor de riesgo en caso de degradaciones involuntarias de versión.
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **El Lockfile como Escudo Temporal:** Aunque un `package.json` defina dependencias permisivas con rangos (ej: `^5.2.12` o `^31.3.2`), el `package-lock.json` nos protege asegurando que los entornos no instalen versiones aleatorias vulnerables. Sin embargo, no se debe depender ciegamente del lockfile a largo plazo; las dependencias del `package.json` deben ser actualizadas explícitamente y fijadas para garantizar la seguridad.
+-   **Actualización Estricta de EOL:** Mantener imágenes de Docker ancladas a una versión específica es una buena práctica de persistencia y DX (reproducibilidad), pero debe revisarse anualmente para evitar ejecutar código sobre plataformas EOL (como Node 20 en 2026).
+

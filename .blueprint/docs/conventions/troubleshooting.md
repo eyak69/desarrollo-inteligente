@@ -98,3 +98,100 @@ El script de deploy debe ejecutar `npm run migrate` antes de iniciar el servidor
 
 ### Variables de entorno no disponibles en el contenedor
 Las variables deben inyectarse en runtime, no en la imagen. Verificar que el `docker-compose.yml` o el orquestador tiene las variables configuradas. Nunca incluirlas en el `Dockerfile`.
+
+---
+
+## Watchdog — Vulnerabilidades y Breaking Changes
+
+*Última revisión: 2026-05-22*
+
+---
+
+### Node.js — Fin del Ciclo de Vida (EOL) de Node 20
+
+**Severidad:** Media / Deuda técnica (Arquitectura y seguridad)
+**Versiones afectadas:** Node.js v20.x y anteriores
+**Versión instalada:** Node.js v20.x (definida en docker-compose y Dockerfile usando `node:20-slim`)
+**Estado:** **AFECTADO**
+**Fuente oficial:** [Node.js Release Schedule](https://nodejs.org/en/blog/release)
+
+**Descripción:** Node.js 20 alcanzó oficialmente su fin de ciclo de vida (EOL) el 30 de abril de 2026. A partir de esta fecha, ya no recibe parches de seguridad, corrección de errores ni actualizaciones oficiales por parte de la comunidad.
+
+**Mitigación:**
+- Planificar la migración a Node.js 22 LTS (LTS activa y soportada en 2026).
+- En el próximo ciclo de mantenimiento, actualizar los archivos [client/Dockerfile](file:///c:/Users/Cristian/OneDrive/Antigravity/desarrollo%20inteligente/client/Dockerfile) y [server/Dockerfile](file:///c:/Users/Cristian/OneDrive/Antigravity/desarrollo%20inteligente/server/Dockerfile) para usar la imagen base `FROM node:22-slim`.
+
+**Urgencia:** Planificar migración en próximo ciclo.
+
+---
+
+### Vite / Vitest — Conflicto e Incompatibilidad de Peer Dependencies (DX)
+
+**Severidad:** Deuda técnica y consistencia de desarrollo (DX)
+**Versiones afectadas:** Vitest v4.x y Vite v5.x
+**Versión instalada:** Vitest `4.1.5` / Vite `5.4.21` (verificado en package.json y lockfiles)
+**Estado:** **AFECTADO**
+**Fuente oficial:** [Vitest GitHub Releases](https://github.com/vitest-dev/vitest/releases)
+
+**Descripción:** La versión de Vitest `4.1.5` instalada en el monorepo declara explícitamente en sus peer dependencies a `"vite": "^6.0.0 || ^7.0.0 || ^8.0.0"`. Sin embargo, el frontend utiliza `"vite": "^5.2.12"` (resuelta a `5.4.21`). Esto genera un conflicto de dependencias que impide ejecuciones limpias de `npm install` sin forzar la instalación (`--legacy-peer-deps` o `--force`), violando la Regla 14 de DX.
+
+**Mitigación:**
+- **Opción A (Recomendada):** Actualizar el ecosistema del frontend a Vite 6.x para restablecer la coherencia con Vitest 4.x.
+- **Opción B:** Realizar downgrade de `vitest` a la versión `3.0.5` o posterior de la rama v3 (que da soporte a Vite 5.x) para limpiar los warnings de npm.
+
+**Urgencia:** Planificar actualización/downgrade en próximo ciclo de dependencias.
+
+---
+
+### Vite — Vulnerabilidades en Dev Server (CVE-2025-31125 / CVE-2026-39363 / CVE-2026-39364)
+
+**Severidad:** Informativa (No afectado actualmente)
+**Versiones afectadas:** 
+- CVE-2025-31125: Vite v5 < 5.4.16, v6 < 6.0.13/6.1.3/6.2.4
+- CVE-2026-39363 y CVE-2026-39364: Vite v6 < 6.4.2, v7 < 7.3.2, v8 < 8.0.5
+**Versión instalada:** Vite `5.4.21` (verificado en package-lock.json)
+**Estado:** **NO AFECTADO** (parchada en la rama v5 desde la 5.4.16; las de v6/v7/v8 no afectan a la v5)
+**Fuente oficial:** [Vite Security Advisories](https://github.com/vitejs/vite/security/advisories)
+
+**Descripción:** Vulnerabilidades que permiten leer archivos arbitrarios de la máquina de desarrollo a través del WebSocket del dev server o saltarse restricciones de `server.fs.deny` inyectando query params específicos (`?raw`, `?inline`).
+
+**Mitigación:**
+- Aunque la versión instalada actual (5.4.21) tiene los parches del CVE-2025-31125, se debe evitar configurar `server.host` para exponer el servidor a la red si no es necesario.
+- Si se actualiza a Vite 6.x en el futuro, se debe migrar directamente a una versión segura (v6.4.2 o superior) para no introducir CVE-2026-39363/4.
+
+**Urgencia:** Monitorear durante futuros upgrades.
+
+---
+
+### AG Grid — Prototype Pollution en deep merge (CVE-2024-38996)
+
+**Severidad:** Informativa (No afectado actualmente)
+**Versiones afectadas:** AG Grid <= 31.3.2
+**Versión instalada:** `31.3.4` (verificado en client/package-lock.json para `ag-grid-community` y `ag-grid-react`)
+**Estado:** **NO AFECTADO** (el lockfile resolvió la versión v31.3.4 que contiene la mitigación)
+**Fuente oficial:** [AG Grid Security Advisories](https://github.com/ag-grid/ag-grid/security/advisories)
+
+**Descripción:** Una falla en la función `_.mergeDeep` permite a un atacante inyectar propiedades maliciosas (`__proto__`), resultando en Denegación de Servicio (DoS) o potencial Ejecución de Código Arbitrario si se procesan datos no sanitizados del usuario.
+
+**Mitigación:**
+- Mantener la versión instalada en v31.3.4+. No degradar dependencias de AG Grid a versiones inferiores a 31.3.3.
+
+**Urgencia:** Monitorear.
+
+---
+
+### Express / path-to-regexp — Regular Expression Denial of Service (CVE-2026-4867)
+
+**Severidad:** Informativa (No afectado actualmente)
+**Versiones afectadas:** path-to-regexp < 0.1.13
+**Versión instalada:** `0.1.13` (resuelta de forma transitiva a través de `express` v4.22.1 en server/package-lock.json)
+**Estado:** **NO AFECTADO**
+**Fuente oficial:** [path-to-regexp Security Advisories](https://github.com/pillarjs/path-to-regexp/security/advisories)
+
+**Descripción:** ReDoS de alta severidad (CVSS 7.5) que causa backtracking catastrófico si se configuran rutas con 3 o más parámetros en un solo segmento (ej: `/:a-:b-:c`) cuando el servidor procesa URLs maliciosas.
+
+**Mitigación:**
+- Asegurar que la dependencia transitiva `path-to-regexp` esté bloqueada en `0.1.13` o superior en el lockfile.
+- Evitar rutas con 3 o más parámetros dinámicos adyacentes por segmento de red.
+
+**Urgencia:** Monitorear.

@@ -101,3 +101,16 @@ implique una excepción STRICT o un hallazgo relevante.
 
 **¿Se debe actualizar el blueprint?** No — el blueprint ya refleja el estado ideal (Vertical Slices y DB 3NF). Esta entrada documenta la justificación e identificación de la brecha existente en la app de Ideas.
 
+---
+
+## 2026-05-22 — [Seguridad] Auditoría Watchdog v2.3.0 y Dependencias
+
+**Regla afectada:** `.blueprint/project-standards/architecture.md` (Docker & Resiliencia) y `.superpowers/blueprint-watchdog.md`.
+
+**Excepción/Decisión:** Se realizó el escaneo de dependencias reales del monorepo y se detectó que Node.js 20 (base de los contenedores Docker) llegó a su fin de vida útil (EOL) el 30 de abril de 2026. Además, se identificó un conflicto de peer dependencies entre Vitest v4 y Vite v5 en el cliente, pero se decidió mantener la configuración actual porque los tests ejecutan sin errores y el lockfile ya resuelve versiones parchadas y seguras para los CVEs de Vite, AG Grid, path-to-regexp y body-parser.
+
+**Consecuencia:** Se mantiene el uso de Node 20 en Docker y Vite v5 en el cliente temporalmente, lo que representa una deuda técnica y un riesgo de obsolescencia. Es imperativo planificar la migración a Node 22 (LTS) y Vite 6.x en el próximo ciclo de mantenimiento técnico.
+
+**¿Se debe actualizar el blueprint?** Sí — se documentaron las discrepancias y mitigaciones en `.blueprint/docs/conventions/troubleshooting.md`.
+
+
