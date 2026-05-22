@@ -644,10 +644,31 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
     -   **Decisión:** Modificar la descripción en `server/package.json` para reflejar que es el "Backend Blueprint Maestro" y eliminar el comando de prueba de carga de k6 (`test:load`) que apuntaba a archivos ya eliminados.
     -   **Motivo:** Mantener una base de código coherente y libre de configuraciones huérfanas o rotas que generen confusión o errores al arrancar el proyecto.
 
+3.  **Configuración del Entorno de Compilación en Cliente (`client/tsconfig.json`)**:
+    -   **Decisión:** Crear un archivo de configuración `tsconfig.json` específico en la carpeta `client/` para habilitar la compilación estática (`tsc`) de la aplicación frontend de React + Vite.
+    -   **Motivo:** El pipeline estático `npm run blueprint:check` fallaba en la tarea de compilación del cliente debido a la ausencia de un archivo `tsconfig.json` local (que nunca existió en el historial de Git).
+    -   **Riesgo / Deuda Técnica:** Mantener archivos `tsconfig.json` independientes para cliente y servidor puede conducir a inconsistencias en las políticas de tipado estricto si el proyecto añade módulos o validaciones de Zod compartidas en el futuro. Se debe documentar este riesgo para considerar una migración a TypeScript Project References en caso de escalar a una estructura real de monorepo.
+
 ### 💡 Aprendizajes y "Gotchas"
 
 -   **Preservar el Contexto sin Contaminar la Compilación**: Las plantillas de ejemplo ubicadas en `.blueprint/` no participan en el flujo activo de compilación de React (`client/src/`) ni de Express (`server/src/`), previniendo errores del compilador o del linter sobre imports obsoletos.
--   **Extracción Limpia desde Git**: Al automatizar la restauración y copia de archivos eliminados hacia su ubicación final en plantillas, utilizar scripts de Node.js que involucren `git checkout HEAD --` y operaciones de sistema de archivos nativas garantiza una portabilidad transversal (evitando problemas de codificación UTF-16LE en redirecciones de PowerShell).
+-   **Extracción Limpia desde Git**: Al automatizar la restauración y copia de archivos eliminados hacia su ubicación final en plantillas, utilizar scripts de Node.js que involucren `git checkout HEAD --` y operaciones de sistema de archivos nativas garantiza una portabilidad transversal (evitando problemas de codificación UTF-16LE inyectados por PowerShell).
+-   **Falta de `tsconfig.json` Silenciosa en Desarrollo con Vite**: Los empaquetadores modernos como Vite no realizan type-checking del código en tiempo de ejecución del dev server por defecto (delegando todo el rendimiento al compilador rápido de esbuild). Esto puede ocultar la ausencia de configuraciones críticas de compilación en el repositorio hasta que se ejecuta un paso de build estricto (`tsc --noEmit` o `npm run build`), lo que recalca la importancia de validar siempre el pipeline de CI/CD de forma constante en local.
 
+---
 
+## [2026-05-22] - Purga Estructural y Consolidación de Metadatos/Blueprint (v2.8.0)
 
+### 🏛️ Decisiones de Arquitectura y Deuda Técnica Aceptada
+
+1. **Eliminación Definitiva del Código Activo en Raíz**:
+    - **Decisión:** Confirmar la eliminación física y del historial activo en la rama `main` de las carpetas de producción `client/` y `server/`, junto con el orquestador `docker-compose.yml` y los archivos `package.json`/`package-lock.json` de la raíz.
+    - **Motivo:** Centralizar el alcance del repositorio únicamente en las especificaciones de arquitectura, gobernanza y plantillas del Blueprint, evitando el mantenimiento de una base de código de producción ficticia propensa a drift y desactualización.
+    - **Riesgo / Deuda Técnica (IMPORTANTE):**
+        - El script de andamiaje `scripts/scaffold-project.js` queda inoperativo in-place al no tener archivos de código activo en la raíz sobre los que aplicar los reemplazos.
+        - Se viola temporalmente la **Regla 14 de DX** al no poder levantar localmente un entorno con 2 o 3 comandos directos.
+        - Se acepta esta deuda técnica bajo el supuesto de que en una siguiente fase se modificará el scaffold para que funcione bajo un esquema de exportación/copia a directorios externos (Alternativa Superior B).
+
+### 💡 Aprendizajes y "Gotchas"
+
+- **Impacto de la Purga de Código**: Al consolidar un repositorio como "Blueprint Puro" removiendo los entornos ejecutables de la raíz, se debe advertir claramente al equipo que los scripts interactivos de andamiaje locales quedarán rotos hasta que se reimplementen bajo una arquitectura de plantillas externas. El control de versiones (`git status`) reflejará la purga como eliminaciones masivas que deben ser asimiladas en el flujo de CI/CD.
