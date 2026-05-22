@@ -16,10 +16,6 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Cargar variables de entorno. Intenta buscar en el directorio actual de ejecución (raíz del proyecto)
 // y como fallback en la ruta relativa fija del blueprint.

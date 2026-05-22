@@ -6,7 +6,7 @@ import { AppError } from '../errors/app-error';
  * Garantiza que todas las respuestas de error sigan el formato del Blueprint.
  */
 export const errorMiddleware = (
-  err: any, // Express error middleware REQUIRES 4 arguments, and 'err' is usually 'any' from third parties
+  err: unknown, // Express error middleware
   _req: Request,
   res: Response,
   _next: NextFunction

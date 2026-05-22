@@ -216,6 +216,7 @@ const IdeasPage = () => {
       field: 'complexity', 
       headerName: 'Complejidad', 
       flex: 1,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cellRenderer: (params: any) => (
         <Chip label={params.value} color={getComplexityColor(params.value)} size="small" />
       )
@@ -223,6 +224,7 @@ const IdeasPage = () => {
     { 
       headerName: 'Acciones',
       width: 120,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cellRenderer: (params: any) => (
         <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
           <IconButton size="small" onClick={() => handleEdit(params.data)} color="primary">

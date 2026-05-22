@@ -43,7 +43,7 @@ async function runTest() {
         const latency = await makeRequest();
         latencies.push(latency);
         completed++;
-      } catch (error) {
+      } catch {
         failed++;
       }
     });

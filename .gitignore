@@ -14,3 +14,14 @@ yarn-error.log*
 /client/node_modules
 /server/dist
 /server/node_modules
+
+# Archivos comprimidos y respaldos
+*.rar
+*.zip
+*.tar.gz
+*.7z
+
+# Reportes y logs locales de desarrollo
+*_report.txt
+/lint_report.txt
+

@@ -18,7 +18,9 @@ const config: { [key: string]: Knex.Config } = {
     pool: {
       min: 0,
       max: 7,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       afterCreate: (conn: any, cb: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         conn.query('SET NAMES utf8mb4', (err: any) => cb(err, conn));
       }
     },

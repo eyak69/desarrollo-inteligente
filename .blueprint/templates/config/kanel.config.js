@@ -46,7 +46,7 @@ module.exports = {
   preDeleteOutputFolder: true, // Limpiar la carpeta de salida antes de regenerar
   
   // Opciones de generación personalizadas
-  typeFilter: (pgType) => true, // Filtro por si se requiere omitir tablas del sistema o de migraciones
+  typeFilter: () => true, // Filtro por si se requiere omitir tablas del sistema o de migraciones
   
   customGenerators: [
     // Aquí se pueden registrar generadores de validación como Zod schemas automáticos si se requiere

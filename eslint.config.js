@@ -49,8 +49,14 @@ export default tseslint.config(
     }
   },
   {
-    // Node.js scripts and server
-    files: ['server/**/*.{ts,js}', 'server/scripts/*.js', 'eslint.config.js'],
+    // Node.js scripts, blueprint automation and tests
+    files: [
+      'server/**/*.{ts,js}',
+      'server/scripts/**/*.js',
+      '.blueprint/**/*.js',
+      'tests/**/*.js',
+      'eslint.config.js'
+    ],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -58,7 +64,8 @@ export default tseslint.config(
     },
     rules: {
       'no-restricted-globals': 'off',
-      'no-console': 'off'
+      'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off'
     }
   }
 );

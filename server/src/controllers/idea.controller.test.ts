@@ -21,10 +21,11 @@ describe('IdeaController', () => {
   let service: IdeaService;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let responseJson: any;
+  let responseJson: unknown;
   let responseStatus: number;
 
   beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     service = new IdeaService({} as any); // El repo no importa aquí por el mock de la clase
     controller = new IdeaController(service);
     responseJson = null;
