@@ -526,3 +526,32 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **El Lockfile como Escudo Temporal:** Aunque un `package.json` defina dependencias permisivas con rangos (ej: `^5.2.12` o `^31.3.2`), el `package-lock.json` nos protege asegurando que los entornos no instalen versiones aleatorias vulnerables. Sin embargo, no se debe depender ciegamente del lockfile a largo plazo; las dependencias del `package.json` deben ser actualizadas explícitamente y fijadas para garantizar la seguridad.
 -   **Actualización Estricta de EOL:** Mantener imágenes de Docker ancladas a una versión específica es una buena práctica de persistencia y DX (reproducibilidad), pero debe revisarse anualmente para evitar ejecutar código sobre plataformas EOL (como Node 20 en 2026).
 
+---
+
+## [2026-05-22] - Automatización del Esquema y Tipado TypeScript (v2.4.0)
+
+### 🏛️ Decisiones de Arquitectura
+
+1.  **Independencia y Portabilidad de Scripts de Gobernanza**:
+    -   **Decisión:** Se refactorizó el script `generate-db-dictionary.js` para usar `process.cwd()` y variables de entorno para resolver la ruta del `.env` y el archivo Markdown final.
+    -   **Motivo:** Resolver la deuda técnica de rutas relativas rígidas (`../../../../.env`). Ahora el script puede copiarse y ejecutarse desde la raíz de cualquier proyecto sin romperse, manteniendo su portabilidad como plantilla.
+    -   **Riesgo:** Requiere que el comando se ejecute desde la raíz del proyecto o que se defina la variable `ENV_PATH` si se ejecuta desde directorios internos.
+
+2.  **Configuración de Kanel Integrada con Knex**:
+    -   **Decisión:** Se creó el archivo `kanel.config.js` de ejemplo utilizando el plugin `@kanel/knex`.
+    -   **Motivo:** Evitar el acoplamiento a una base de datos específica (PostgreSQL). Al usar Knex, Kanel puede autogenerar interfaces y tipos TypeScript de forma agnóstica para MySQL/MariaDB, SQLite o Postgres basándose en la configuración existente en el proyecto de backend.
+    -   **Alternativas Analizadas:**
+        *   *Alternativa 1 (Kysely + kysely-codegen):* Excelente tipado nativo sin dependencias pesadas en tiempo de ejecución, pero requiere migrar Knex a Kysely, lo que rompería el stack actual.
+        *   *Alternativa 2 (Schemats/knex-types):* Herramientas más ligeras, pero con menor mantenimiento comunitario en comparación con Kanel en la actualidad.
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Enfoque Zero Trust en Conexiones**: Las plantillas de autogeneración de base de datos (`generate-db-dictionary.js`) y generación de tipos (`kanel.config.js`) se alimentan al 100% de variables de entorno sanitizadas (.env), erradicando las credenciales hardcodeadas.
+2.  **Gobernanza de Zonas Horarias**: Se estableció en `database-rules.md` el estándar obligatorio de usar UTC (`Z`) tanto en el motor de base de datos como en los conectores del backend (Knex/Kanel) para evitar desfases en registros temporales de auditoría (`created_at`, `updated_at`).
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **El Silicio se Quema (Wear Leveling)**: Se documentó en las directivas del Blueprint la regla de no persistir estados intermedios de forma continuada en memoria flash o LittleFS en sistemas IoT/C++, aplicando técnicas de debouncing de 5 segundos para consolidar escrituras y proteger el silicio físico.
+-   **Riesgos de Rutas Dinámicas en Scripts**: El uso de `__dirname` para referenciar recursos fuera de la estructura de un paquete genera rigidez. Al automatizar la gobernanza, las herramientas deben orientarse a la raíz del espacio de trabajo utilizando `process.cwd()` para maximizar su portabilidad.
+
+

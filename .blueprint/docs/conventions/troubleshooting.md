@@ -101,6 +101,29 @@ Las variables deben inyectarse en runtime, no en la imagen. Verificar que el `do
 
 ---
 
+## Automatización del Esquema y Tipado
+
+### `Error: La variable de entorno DB_NAME no está definida` al correr el script de diccionario
+- **Causa:** El archivo `.env` no se encuentra en el directorio actual de ejecución (`process.cwd()`) o la variable `DB_NAME` no existe en él.
+- **Solución:** Ejecutar el script siempre desde la raíz del proyecto. Si es necesario ejecutarlo desde un subdirectorio, se puede definir la ruta absoluta del archivo `.env` mediante la variable de entorno `ENV_PATH` (ej: `ENV_PATH=/ruta/al/.env node .blueprint/templates/scripts/generate-db-dictionary.js`).
+
+### Error `ECONNREFUSED` o fallos de autenticación al ejecutar el script o Kanel
+- **Causa:** El motor de base de datos (MySQL/MariaDB) no está activo, o el host/puerto/usuario/contraseña definidos en el `.env` son incorrectos.
+- **Solución:**
+  1. Verificar que el contenedor de la base de datos esté corriendo (`docker-compose ps`).
+  2. Comprobar que las credenciales en el archivo `.env` local coinciden con las del servicio de base de datos.
+  3. Asegurar que el puerto local mapeado (ej: `3306`) no esté ocupado por otra instancia nativa del motor.
+
+### Los tipos de TypeScript no reflejan las columnas o tablas recién creadas
+- **Causa:** Se aplicaron nuevas migraciones con Knex, pero no se ejecutó la herramienta de introspección para actualizar los tipos estáticos en el backend.
+- **Solución:** Ejecutar el comando `npx kanel` desde la raíz para reconstruir las definiciones TypeScript (`server/src/types/schema`). Este comando lee el esquema físico actual y actualiza los archivos autogenerados de tipo interfaz.
+
+### Desfases horarios en marcas de tiempo generadas (`created_at`, `updated_at`)
+- **Causa:** Falta de homogeneidad en el huso horario configurado entre el motor de base de datos, el backend y el generador de tipos.
+- **Solución:** Garantizar que la conexión de base de datos en Knex y Kanel tenga definida explícitamente la propiedad `timezone: 'Z'` (UTC). Toda conversión a hora local del cliente debe realizarse exclusivamente en la capa de presentación (Frontend).
+
+---
+
 ## Watchdog — Vulnerabilidades y Breaking Changes
 
 *Última revisión: YYYY-MM-DD*
