@@ -573,5 +573,32 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **Deuda Técnica a Largo Plazo**: Si el programador humano realiza un cambio rápido o corrección en el esquema físico directamente en la base de datos local saltándose el flujo de la IA, el diccionario de datos y los tipos TypeScript quedarán desincronizados. La confianza ciega en la automatización de la IA no exime de la necesidad de mantener un test o pipeline de verificación automatizada de esquemas en CI/CD.
 -   **Dependencia del Estado de la Base de Datos**: Para que la IA corra autónomamente los scripts, la base de datos de desarrollo debe estar levantada. En entornos nuevos, la IA debe asegurarse de que la BD local responda antes de ejecutar el diccionario y Kanel.
 
+---
+
+## [2026-05-22] - Corrección de ESLint Flat Config y Limpieza de Código Muerto (v2.6.0)
+
+### 🏛️ Decisiones de Arquitectura
+
+1.  **Ajuste Quirúrgico de ESLint Flat Config para Scripts de Node**:
+    -   **Decisión:** Se reestructuró el archivo `eslint.config.js` para expandir el bloque de reglas y entornos de Node.js a las carpetas `.blueprint/**/*.js` y `tests/**/*.js`. Se desactivó la regla `@typescript-eslint/no-require-imports` para estas áreas CommonJS.
+    -   **Motivo:** ESLint 9 arrojaba 55 errores de compilación falsa debido a que los scripts del Blueprint y de tests de carga usaban globales de Node (`process`, `require`, `module`, `console`) que no estaban declarados en su contexto de lenguaje de navegador por defecto.
+    -   **Riesgo:** Si en el futuro se mezclan scripts de Node con componentes del frontend de React en las mismas carpetas de tests sin separar adecuadamente sus extensiones, se podrían desactivar reglas de importación seguras de TS de forma involuntaria.
+
+2.  **Eliminación de Código Muerto y Tipado Limpio**:
+    -   **Decisión:** Se limpiaron importaciones y variables declaradas y no utilizadas (`__dirname`, `__filename`, `fileURLToPath` y `path`) en `generate-db-dictionary.js` y `dump-db.js`, y se removieron parámetros ociosos de callbacks y catch blocks (`_error`, `_pgType`).
+    -   **Motivo:** Reducir el ruido de análisis estático del código y cumplir estrictamente con la regla `@typescript-eslint/no-unused-vars` del proyecto, logrando que el script de linting finalice con un rotundo éxito (0 errores).
+
+### 🔒 Seguridad y Eficiencia
+
+1.  **Blindaje de `.gitignore` contra Contaminación del Historial**:
+    -   **Decisión:** Se agregaron exclusiones explícitas para archivos comprimidos binarios (`*.rar`, `*.zip`, `*.tar.gz`, `*.7z`) y reportes dinámicos de texto (`*_report.txt` e `/lint_report.txt`) en el archivo `.gitignore` raíz.
+    -   **Motivo:** Prevenir que un comando `git add .` imprudente de la IA o de un desarrollador humano suba binarios pesados (como `blueprint.rar` o `superpowers.rar` actualmente en el directorio de trabajo local) al repositorio de GitHub, previniendo la degradación del rendimiento de clonado de Git.
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **El Flat Config de ESLint 9 se Aplica en Cascada**: A diferencia de las versiones antiguas de ESLint donde los archivos `.eslintrc` en subcarpetas sobreescribían localmente, el nuevo formato Flat Config aplica las reglas de manera global a menos que se restrinjan rigurosamente con los patrones de la propiedad `files`. Definir el contexto del compilador (`globals.node`) es imperativo para evitar que reglas de TypeScript intenten parsear Node puro.
+-   **Omitir Parámetros No Usados en Callbacks y Catch Blocks**: En versiones modernas de JavaScript y TypeScript, no es necesario nombrar variables no utilizadas. El uso de `catch {` (sin parámetro) y la firma de funciones flecha sin variables basura (como en `typeFilter`) mantiene el código limpio y robusto frente a reglas estrictas de linter sin tener que depender de prefijos artificiales como `_`.
+
+
 
 
