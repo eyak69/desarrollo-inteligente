@@ -554,4 +554,24 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **El Silicio se Quema (Wear Leveling)**: Se documentó en las directivas del Blueprint la regla de no persistir estados intermedios de forma continuada en memoria flash o LittleFS en sistemas IoT/C++, aplicando técnicas de debouncing de 5 segundos para consolidar escrituras y proteger el silicio físico.
 -   **Riesgos de Rutas Dinámicas en Scripts**: El uso de `__dirname` para referenciar recursos fuera de la estructura de un paquete genera rigidez. Al automatizar la gobernanza, las herramientas deben orientarse a la raíz del espacio de trabajo utilizando `process.cwd()` para maximizar su portabilidad.
 
+---
+
+## [2026-05-22] - Gobernanza de Ejecución Autónoma por IA (v2.5.0)
+
+### 🏛️ Decisiones de Arquitectura
+
+1.  **Automatización Invisible para el Desarrollador (AI-First Operations)**:
+    -   **Decisión:** Mover la responsabilidad de ejecutar las herramientas de base de datos (`generate-db-dictionary.js` y `npx kanel`) desde el desarrollador humano hacia la propia IA. Se agregaron reglas explícitas en `.blueprint/ai-instructions/ai-operating-rules.md` para obligar a los agentes a ejecutar e integrar estas herramientas autónomamente.
+    -   **Motivo:** En proyectos donde la IA implementa nuevas funcionalidades de backend y base de datos, el programador humano no debe cargar con el trabajo operativo de recordar comandos de mantenimiento de diccionarios y tipos de datos. La IA debe dejar el entorno en un estado consistente y documentado de forma transparente.
+    -   **Alternativas Analizadas:**
+        *   *Alternativa 1 (Hooks locales de Git/Husky):* Evita commits sin actualizar el esquema de datos, pero bloquea el flujo si la base de datos local no está encendida durante el commit.
+        *   *Alternativa 2 (GitHub Actions CI/CD):* Valida y actualiza en la nube, pero introduce latencia entre lo que escribe la IA en local y lo que llega a producción.
+        *   *Alternativa Híbrida Adoptada (Regla Operativa IA + Documentación):* La IA se encarga de la autoejecución local autónoma y se documenta la necesidad de validación en CI/CD para evitar cambios humanos sin procesar.
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **Deuda Técnica a Largo Plazo**: Si el programador humano realiza un cambio rápido o corrección en el esquema físico directamente en la base de datos local saltándose el flujo de la IA, el diccionario de datos y los tipos TypeScript quedarán desincronizados. La confianza ciega en la automatización de la IA no exime de la necesidad de mantener un test o pipeline de verificación automatizada de esquemas en CI/CD.
+-   **Dependencia del Estado de la Base de Datos**: Para que la IA corra autónomamente los scripts, la base de datos de desarrollo debe estar levantada. En entornos nuevos, la IA debe asegurarse de que la BD local responda antes de ejecutar el diccionario y Kanel.
+
+
 
