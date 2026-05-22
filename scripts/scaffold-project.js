@@ -69,18 +69,32 @@ const main = async () => {
   console.log('Presiona Enter para aceptar los valores por defecto.\n');
 
   try {
-    // 1. Obtener parámetros del usuario
-    const nombreProyecto = await pregunta('1. Nombre del proyecto (kebab-case)', 'nuevo-proyecto');
-    if (!/^[a-z0-9-]+$/.test(nombreProyecto)) {
-      throw new Error('El nombre del proyecto debe estar en formato kebab-case (letras minúsculas, números y guiones).');
-    }
+    const nonInteractive = process.argv.includes('--clean') || process.argv.includes('--non-interactive');
+    
+    let nombreProyecto = 'desarrollo-inteligente';
+    let tituloProyecto = 'Blueprint Maestro';
+    let puertoFrontend = '3000';
+    let puertoBackend = '3001';
+    let dbName = 'desarrollo';
+    let limpiarIdeas = false;
 
-    const tituloProyecto = await pregunta('2. Título legible para la interfaz', 'Nuevo Proyecto');
-    const puertoFrontend = await pregunta('3. Puerto para el Frontend', '3000');
-    const puertoBackend = await pregunta('4. Puerto para el Backend', '3001');
-    const dbName = await pregunta('5. Nombre de la base de datos', nombreProyecto.replace(/-/g, '_'));
-    const limpiarIdeasRaw = await pregunta('6. ¿Deseas eliminar la aplicación de Ideas de referencia? (s/N)', 'n');
-    const limpiarIdeas = limpiarIdeasRaw.toLowerCase() === 's';
+    if (nonInteractive) {
+      limpiarIdeas = true;
+      console.log('🔧 Modo no interactivo activo (--clean). Usando configuraciones predeterminadas con limpieza de Ideas.');
+    } else {
+      // 1. Obtener parámetros del usuario interactivos
+      nombreProyecto = await pregunta('1. Nombre del proyecto (kebab-case)', 'nuevo-proyecto');
+      if (!/^[a-z0-9-]+$/.test(nombreProyecto)) {
+        throw new Error('El nombre del proyecto debe estar en formato kebab-case (letras minúsculas, números y guiones).');
+      }
+
+      tituloProyecto = await pregunta('2. Título legible para la interfaz', 'Nuevo Proyecto');
+      puertoFrontend = await pregunta('3. Puerto para el Frontend', '3000');
+      puertoBackend = await pregunta('4. Puerto para el Backend', '3001');
+      dbName = await pregunta('5. Nombre de la base de datos', nombreProyecto.replace(/-/g, '_'));
+      const limpiarIdeasRaw = await pregunta('6. ¿Deseas eliminar la aplicación de Ideas de referencia? (s/N)', 'n');
+      limpiarIdeas = limpiarIdeasRaw.toLowerCase() === 's';
+    }
 
     console.log('\n--- Resumen de Configuración ---');
     console.log(`Nombre del Proyecto: ${nombreProyecto}`);
@@ -91,11 +105,13 @@ const main = async () => {
     console.log(`Limpiar App Ideas:  ${limpiarIdeas ? 'SÍ' : 'NO'}`);
     console.log('--------------------------------\n');
 
-    const confirmar = await pregunta('¿Confirmas que deseas aplicar estos cambios? (s/N)', 'n');
-    if (confirmar.toLowerCase() !== 's') {
-      console.log('❌ Operación cancelada por el usuario.');
-      rl.close();
-      return;
+    if (!nonInteractive) {
+      const confirmar = await pregunta('¿Confirmas que deseas aplicar estos cambios? (s/N)', 'n');
+      if (confirmar.toLowerCase() !== 's') {
+        console.log('❌ Operación cancelada por el usuario.');
+        rl.close();
+        return;
+      }
     }
 
     console.log('\n🚀 Aplicando cambios estructurales...\n');
@@ -164,6 +180,11 @@ const main = async () => {
         // Remover el item de menú de ideas
         layoutContenido = layoutContenido.replace(
           /\{\s*text:\s*'Laboratorio de Ideas',\s*icon:\s*<IdeasIcon\s*\/>,\s*path:\s*'\/ideas'\s*\},?\r?\n/,
+          ''
+        );
+        // Remover el import de IdeasIcon para evitar errores de linter
+        layoutContenido = layoutContenido.replace(
+          /\s*Lightbulb as IdeasIcon,\r?\n/,
           ''
         );
         // Cambiar la selección hardcodeada a Dashboard

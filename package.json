@@ -24,15 +24,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eyak69/desarrollo-inteligente.git"
+    "url": "git+https://github.com/proyectos/desarrollo-inteligente.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eyak69/desarrollo-inteligente/issues"
+    "url": "https://github.com/proyectos/desarrollo-inteligente/issues"
   },
-  "homepage": "https://github.com/eyak69/desarrollo-inteligente#readme",
+  "homepage": "https://github.com/proyectos/desarrollo-inteligente#readme",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",

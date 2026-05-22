@@ -614,6 +614,10 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
     -   **Decisión:** Ofrecer en el script la opción interactiva de eliminar físicamente todas las referencias y archivos de la app de Ideas (`client/src/features/ideas`, controladores, repositorios, schemas, semillas y migraciones) reemplazándola con un layout de bienvenida limpio en MUI con estética Obsidian.
     -   **Motivo:** Garantizar que los nuevos proyectos no arrastren lógica de negocio obsoleta y mantengan su coherencia con el Blueprint estructural.
 
+3.  **Consolidación del Repositorio a Blueprint Puro**:
+    -   **Decisión:** Ejecución de la purga física del dominio de Ideas sobre el repositorio principal actual, desactivando y eliminando todas sus referencias en caliente.
+    -   **Motivo:** Adaptar el repositorio para que sirva directamente como base limpia ("Blueprint Puro") de inicio rápido para nuevos desarrollos empresariales sin requerir un paso manual de limpieza del desarrollador.
+
 ### 🔒 Seguridad y Eficiencia
 
 1.  **Cero Dependencias de Terceros para DX**: El script utiliza exclusivamente las APIs nativas de Node.js (`fs`, `path`, `readline`) para no requerir un `npm install` previo si el desarrollador clona el repositorio solo para inicializar un nuevo proyecto (Regla 14).
@@ -624,4 +628,26 @@ Se realizó una auditoría profunda de la aplicación de Ideas actual comparánd
 -   **Reemplazos en Texto Duro (Fragilidad de Drift)**: Los scripts de andamiaje in-place son propensos a desactualizarse si las constantes de configuración cambian de nombre en la plantilla (por ejemplo, si el puerto por defecto cambia en el código pero no en el script). La automatización requiere revisiones periódicas o un enfoque basado en archivos JSON de declaración de plantillas para mitigar la deuda técnica.
 -   **Eliminación Segura de Migraciones**: Al borrar migraciones de base de datos de forma dinámica, se debe filtrar en base a patrones semánticos para no eliminar archivos del sistema o de infraestructura compartida de forma accidental.
 -   **Fugas de Dominio en Estructuras Compartidas (Layout y Servicios)**: Al diseñar herramientas de andamiaje que limpian un dominio de ejemplo, es común omitir referencias fuera del directorio del módulo (tales como `client/src/services/ideaService.ts`, menús de navegación en `client/src/components/layout/Layout.tsx`, o utilidades como `server/dump-db.js`). Se deben auditar las referencias globales y programar reemplazos automatizados en estos archivos transversales para evitar que el linter falle o que el menú lateral contenga opciones rotas en un proyecto nuevo.
+
+---
+
+## [2026-05-22] - Aislamiento del Dominio de Ideas en Plantillas del Blueprint (v2.7.1)
+
+### 🏛️ Decisiones de Arquitectura
+
+1.  **Aislamiento de Ideas como Ejemplo de Referencia (Alternativa B)**:
+    -   **Decisión:** Mover todos los archivos eliminados del código activo de producción (frontend, backend, migraciones, semillas y pruebas de carga) hacia `.blueprint/templates/examples/ideas/`.
+    -   **Motivo:** Evitar la deuda técnica que causaría un Blueprint completamente vacío sin un ejemplo de referencia real de la arquitectura (Vertical Slices, DTOs, tests colocalizados, integración con Knex y React Query). El desarrollador ahora cuenta con la carpeta de ejemplos para consultar la estructura correcta sin comprometer el código de producción.
+    -   **Alternativas Analizadas:** Se analizó reescribir una vertical básica de usuarios (`users`) para que sirviera de ejemplo de producción (Alternativa A), pero se prefirió la Alternativa B por rapidez y fidelidad con el ejemplo de Ideas original que ya estaba validado.
+
+2.  **Saneamiento de Configuraciones en Producción**:
+    -   **Decisión:** Modificar la descripción en `server/package.json` para reflejar que es el "Backend Blueprint Maestro" y eliminar el comando de prueba de carga de k6 (`test:load`) que apuntaba a archivos ya eliminados.
+    -   **Motivo:** Mantener una base de código coherente y libre de configuraciones huérfanas o rotas que generen confusión o errores al arrancar el proyecto.
+
+### 💡 Aprendizajes y "Gotchas"
+
+-   **Preservar el Contexto sin Contaminar la Compilación**: Las plantillas de ejemplo ubicadas en `.blueprint/` no participan en el flujo activo de compilación de React (`client/src/`) ni de Express (`server/src/`), previniendo errores del compilador o del linter sobre imports obsoletos.
+-   **Extracción Limpia desde Git**: Al automatizar la restauración y copia de archivos eliminados hacia su ubicación final en plantillas, utilizar scripts de Node.js que involucren `git checkout HEAD --` y operaciones de sistema de archivos nativas garantiza una portabilidad transversal (evitando problemas de codificación UTF-16LE en redirecciones de PowerShell).
+
+
 

@@ -42,7 +42,6 @@ app.use(cors());
 app.use(express.json());
 
 // Importar rutas
-import ideaRoutes from './routes/idea.routes';
 
 // Logger de requests
 app.use((req, res, next) => {
@@ -53,7 +52,6 @@ app.use((req, res, next) => {
 import { errorMiddleware } from './middleware/error.middleware';
 
 // Registro de API
-app.use('/api/ideas', ideaRoutes);
 
 // Rutas de salud (Regla 11)
 app.get('/health', (req, res) => {

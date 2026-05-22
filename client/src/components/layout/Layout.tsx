@@ -6,7 +6,6 @@ import {
 } from '@mui/material';
 import { 
   Dashboard as DashboardIcon, 
-  Lightbulb as IdeasIcon, 
   Settings as SettingsIcon,
   Menu as MenuIcon,
   Business as LogoIcon
@@ -28,8 +27,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Laboratorio de Ideas', icon: <IdeasIcon />, path: '/ideas' },
-    { text: 'Configuración', icon: <SettingsIcon />, path: '/settings' },
+        { text: 'Configuración', icon: <SettingsIcon />, path: '/settings' },
   ];
 
   const drawer = (
@@ -50,15 +48,15 @@ const Layout = ({ children }: LayoutProps) => {
                 '&.Mui-selected': { backgroundColor: 'rgba(59, 130, 246, 0.12)' },
                 '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.05)' }
               }}
-              selected={item.text === 'Laboratorio de Ideas'}
+              selected={item.text === 'Dashboard'}
             >
-              <ListItemIcon sx={{ color: item.text === 'Laboratorio de Ideas' ? 'primary.main' : 'inherit' }}>
+              <ListItemIcon sx={{ color: item.text === 'Dashboard' ? 'primary.main' : 'inherit' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText 
                 primary={item.text} 
                 primaryTypographyProps={{ 
-                  fontWeight: item.text === 'Laboratorio de Ideas' ? 600 : 400,
+                  fontWeight: item.text === 'Dashboard' ? 600 : 400,
                   fontSize: '0.9rem'
                 }} 
               />
