@@ -1,25 +1,43 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, alpha } from '@mui/material/styles';
+
+// --- DESIGN TOKENS (Obsidian Premium) ---
+export const DESIGN_TOKENS = {
+  colors: {
+    obsidian: '#050505',
+    paper: '#0a0a0a',
+    primary: '#3b82f6',
+    secondary: '#a855f7',
+    border: 'rgba(255, 255, 255, 0.05)',
+    textPrimary: '#ffffff',
+    textSecondary: '#a0a0a0',
+  },
+  glass: {
+    blur: '20px',
+    backgroundColor: 'rgba(10, 10, 10, 0.6)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+  }
+};
 
 const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#3b82f6', // Azul Eléctrico
+      main: DESIGN_TOKENS.colors.primary,
       light: '#60a5fa',
       dark: '#2563eb',
     },
     secondary: {
-      main: '#a855f7', // Púrpura sutil
+      main: DESIGN_TOKENS.colors.secondary,
     },
     background: {
-      default: '#050505',
-      paper: '#121212',
+      default: DESIGN_TOKENS.colors.obsidian,
+      paper: DESIGN_TOKENS.colors.paper,
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#a0a0a0',
+      primary: DESIGN_TOKENS.colors.textPrimary,
+      secondary: DESIGN_TOKENS.colors.textSecondary,
     },
-    divider: 'rgba(255, 255, 255, 0.05)',
+    divider: DESIGN_TOKENS.colors.border,
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -39,7 +57,7 @@ const theme = createTheme({
           padding: '8px 20px',
         },
         containedPrimary: {
-          boxShadow: '0 4px 14px 0 rgba(59, 130, 246, 0.39)',
+          boxShadow: `0 4px 14px 0 ${alpha(DESIGN_TOKENS.colors.primary, 0.39)}`,
         },
       },
     },
@@ -47,16 +65,19 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
+          border: DESIGN_TOKENS.colors.border,
+          backdropFilter: `blur(${DESIGN_TOKENS.glass.blur})`,
         },
       },
     },
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#121212',
+          backgroundColor: DESIGN_TOKENS.glass.backgroundColor,
           backgroundImage: 'none',
           borderRadius: 12,
+          border: DESIGN_TOKENS.glass.border,
+          backdropFilter: `blur(${DESIGN_TOKENS.glass.blur})`,
         },
       },
     },

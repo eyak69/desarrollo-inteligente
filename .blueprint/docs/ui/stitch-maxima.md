@@ -12,7 +12,8 @@ Esta máxima debe ser proporcionada a Stitch (o cualquier motor de generación d
 ## 2. Política de Interacción "Zero Interruption"
 - **Prohibición de Nativos:** Jamás generar pantallas que dependan de `window.alert`, `window.confirm` o `window.prompt`.
 - **Acción Directa + Undo:** Para acciones rutinarias (borrar, archivar), la acción debe ser inmediata con una notificación (Toast) que contenga un botón de "DESHACER" prominente.
-- **ConfirmDialog Premium:** Solo usar diálogos de confirmación para acciones irreversibles o de alto riesgo (ej. vaciar base de datos). Estos diálogos deben ser modales con efecto de cristal y estética Obsidian.
+- [BLOCKER] **Regla de Lote (Batch Deletion):** Si la interfaz presenta una grilla o lista, se DEBE permitir la selección múltiple. Las acciones destructivas en masa se confirman UNA sola vez para todo el lote mediante un `ConfirmDialog` premium.
+- **ConfirmDialog Premium:** Solo usar diálogos de confirmación para acciones críticas o borrados en lote. Estos diálogos deben ser modales con efecto de cristal y estética Obsidian.
 
 ## 3. Paleta de Colores Funcional
 - **Primario:** Azul Eléctrico (#0070f3) o Violeta Premium (#7C3AED) para llamadas a la acción (CTA).

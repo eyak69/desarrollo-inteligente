@@ -50,6 +50,8 @@ app.use((req, res, next) => {
   next();
 });
 
+import { errorMiddleware } from './middleware/error.middleware';
+
 // Registro de API
 app.use('/api/ideas', ideaRoutes);
 
@@ -61,6 +63,9 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({ message: 'Blueprint Maestro API v1.0.0' });
 });
+
+// Middleware de error global (DEBE ir al final)
+app.use(errorMiddleware);
 
 const server = app.listen(env.PORT, () => {
   logger.info(`🚀 Servidor corriendo en http://localhost:${env.PORT}`);

@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Box, Drawer, AppBar, Toolbar, Typography, List, 
   ListItem, ListItemButton, ListItemIcon, ListItemText, 
-  Divider, IconButton, useMediaQuery, useTheme 
+  Divider, IconButton 
 } from '@mui/material';
 import { 
   Dashboard as DashboardIcon, 
@@ -20,8 +20,7 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  // const theme = useTheme(); // Eliminado para limpiar lint
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Dialog, DialogTitle, DialogContent, DialogActions, 
   Button, TextField, MenuItem, Box, useMediaQuery, useTheme, alpha 
@@ -16,19 +16,14 @@ const IdeaDialog = ({ open, onClose, onSave, initialData }: IdeaDialogProps) => 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  const [formData, setFormData] = useState<Partial<Idea>>({
-    title: '',
-    description: '',
-    complexity: 'medium'
+  const [formData, setFormData] = useState<Partial<Idea>>(() => {
+    return initialData || {
+      title: '',
+      description: '',
+      complexity: 'medium'
+    };
   });
 
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData({ title: '', description: '', complexity: 'medium' });
-    }
-  }, [initialData, open]);
 
   const handleSubmit = () => {
     onSave(formData);
@@ -63,6 +58,7 @@ const IdeaDialog = ({ open, onClose, onSave, initialData }: IdeaDialogProps) => 
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             variant="filled"
+            inputProps={{ autoComplete: 'off' }}
           />
           <TextField
             label="Descripción"
@@ -72,6 +68,7 @@ const IdeaDialog = ({ open, onClose, onSave, initialData }: IdeaDialogProps) => 
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             variant="filled"
+            inputProps={{ autoComplete: 'off' }}
           />
           <TextField
             select

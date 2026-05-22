@@ -5,14 +5,13 @@ import { ColDef } from 'ag-grid-community';
 import { 
   Box, Typography, CircularProgress, Alert, Chip, Button, IconButton, Stack, 
   useMediaQuery, useTheme, Card, CardContent, CardActions, InputBase,
-  BottomNavigation, BottomNavigationAction, Paper, Avatar, Badge
+  BottomNavigation, BottomNavigationAction, Paper, Avatar, alpha
 } from '@mui/material';
 import { 
   Add as AddIcon, 
   Edit as EditIcon, 
   Delete as DeleteIcon,
   Search as SearchIcon,
-  NotificationsNone as BellIcon,
   Science as LabIcon,
   Archive as ArchiveIcon,
   Settings as SettingsIcon
@@ -33,16 +32,18 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 const IdeasPage = () => {
   const queryClient = useQueryClient();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const _isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [navValue, setNavValue] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [dialogKey, setDialogKey] = useState(0);
 
   // Consultas
   const { data, isLoading, error } = useQuery({
     queryKey: ['ideas'],
-    queryFn: getIdeas,
+    queryFn: () => getIdeas(1, 100),
     enabled: navValue === 0,
   });
 
@@ -54,10 +55,10 @@ const IdeasPage = () => {
 
   // Filtrado reactivo para el buscador
   const filteredIdeas = useMemo(() => {
-    if (!data) return [];
-    return data.filter((idea: Idea) => 
+    const ideas = data?.data || [];
+    return ideas.filter((idea: Idea) => 
       idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      idea.description.toLowerCase().includes(searchQuery.toLowerCase())
+      idea.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [data, searchQuery]);
 
@@ -91,16 +92,22 @@ const IdeasPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deleteIdea,
+    mutationFn: async (ids: string | string[]) => {
+      const idList = Array.isArray(ids) ? ids : [ids];
+      return Promise.all(idList.map(id => deleteIdea(id)));
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] });
       queryClient.invalidateQueries({ queryKey: ['ideas-archived'] });
-      toast.success('Idea eliminada', {
-        description: 'El registro se ha borrado lógicamente del sistema.'
+      setSelectedIds([]); // Limpiar selección tras borrar
+      toast.success('Operación completada', {
+        description: 'Las ideas seleccionadas han sido archivadas.'
       });
     },
     onError: () => {
-      toast.error('No se pudo eliminar la idea');
+      toast.error('Error', {
+        description: 'No se pudieron procesar algunas eliminaciones.'
+      });
     }
   });
 
@@ -129,6 +136,7 @@ const IdeasPage = () => {
 
   const handleAdd = () => {
     setSelectedIdea(null);
+    setDialogKey(prev => prev + 1);
     setDialogOpen(true);
   };
 
@@ -142,19 +150,29 @@ const IdeasPage = () => {
 
   const { confirm, handleConfirm, handleCancel, open: confirmOpen, options: confirmOptions } = useConfirm();
   
-  const handleDelete = (id: string) => {
-    // POLÍTICA: Acción Directa + Undo (Sin interrupción)
-    deleteMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success('Idea archivada', {
-          description: 'Se ha movido al archivo del laboratorio.',
-          action: {
-            label: 'DESHACER',
-            onClick: () => handleRestore(id)
-          }
-        });
-      }
+  const handleDelete = async (ids: string | string[]) => {
+    const isBatch = Array.isArray(ids) && ids.length > 1;
+    const count = Array.isArray(ids) ? ids.length : 1;
+
+    const confirmed = await confirm({
+      title: isBatch ? `¿Borrar ${count} ideas?` : '¿Borrar esta idea?',
+      message: isBatch 
+        ? `Se archivarán ${count} elementos del laboratorio de forma simultánea.`
+        : 'Esta acción moverá la idea al archivo del laboratorio.',
+      confirmText: 'Confirmar',
+      cancelText: 'Cancelar',
+      severity: 'error'
     });
+
+    if (confirmed) {
+      deleteMutation.mutate(ids);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   const handleClearAll = async () => {
@@ -175,7 +193,7 @@ const IdeasPage = () => {
     }
   };
 
-  const getComplexityColor = (complexity: string): any => {
+  const getComplexityColor = (complexity: string): "success" | "warning" | "error" | "default" => {
     switch (complexity) {
       case "easy": return "success";
       case "medium": return "warning";
@@ -185,7 +203,14 @@ const IdeasPage = () => {
   };
 
   const columnDefs: ColDef<Idea>[] = [
-    { field: 'title', headerName: 'Título', flex: 2, filter: true },
+    { 
+      field: 'title', 
+      headerName: 'Título', 
+      flex: 2, 
+      filter: true,
+      checkboxSelection: true,
+      headerCheckboxSelection: true
+    },
     { field: 'description', headerName: 'Descripción', flex: 3 },
     { 
       field: 'complexity', 
@@ -231,7 +256,7 @@ const IdeasPage = () => {
       bgcolor: '#050505'
     }}>
       {/* Header Premium (Móvil) */}
-      {isMobile && (
+      {_isMobile && (
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar 
@@ -269,7 +294,7 @@ const IdeasPage = () => {
       )}
 
       {/* Buscador Premium */}
-      {isMobile && (
+      {_isMobile && (
         <Box 
           sx={{ 
             bgcolor: '#121212', 
@@ -293,7 +318,7 @@ const IdeasPage = () => {
       )}
 
       {/* Título Desktop */}
-      {!isMobile && (
+      {!_isMobile && (
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
           <Box>
             <Typography variant="h2" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-2px' }}>
@@ -311,19 +336,43 @@ const IdeasPage = () => {
       
       {/* Contenido Dinámico basado en Navegación */}
       {navValue === 0 && (
-        isMobile ? (
+        _isMobile ? (
           <Stack spacing={2.5}>
             {filteredIdeas.map((idea: Idea) => (
               <Card 
                 key={idea.id} 
+                onClick={() => selectedIds.length > 0 && handleToggleSelect(idea.id)}
                 sx={{ 
                   bgcolor: '#0a0a0a', 
                   borderRadius: 4,
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid',
+                  borderColor: selectedIds.includes(idea.id) ? 'primary.main' : 'rgba(255, 255, 255, 0.08)',
                   transition: '0.2s',
+                  position: 'relative',
                   '&:active': { transform: 'scale(0.98)' }
                 }}
               >
+                <Box 
+                  onClick={(e) => { e.stopPropagation(); handleToggleSelect(idea.id); }}
+                  sx={{ 
+                    position: 'absolute', 
+                    top: 12, 
+                    right: 12, 
+                    width: 24, 
+                    height: 24, 
+                    borderRadius: '50%', 
+                    border: '2px solid',
+                    borderColor: selectedIds.includes(idea.id) ? 'primary.main' : 'rgba(255,255,255,0.2)',
+                    bgcolor: selectedIds.includes(idea.id) ? 'primary.main' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {selectedIds.includes(idea.id) && <Box sx={{ width: 10, height: 10, bgcolor: 'white', borderRadius: '20%' }} />}
+                </Box>
                 <CardContent sx={{ pt: 3, pb: 1 }}>
                   <Chip 
                     label={idea.complexity.toUpperCase()} 
@@ -341,22 +390,18 @@ const IdeasPage = () => {
                 <CardActions sx={{ justifyContent: 'flex-start', px: 2, pb: 2, pt: 1 }}>
                   <Button 
                     startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => handleEdit(idea)}
+                    onClick={(e) => { e.stopPropagation(); handleEdit(idea); }}
                     sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
                   >
                     EDITAR
                   </Button>
                   <Button 
                     startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => handleDelete(idea.id)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(idea.id); }}
                     sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '0.75rem' }}
                   >
                     ELIMINAR
                   </Button>
-                  <Box sx={{ flexGrow: 1 }} />
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>
-                    AHORA
-                  </Typography>
                 </CardActions>
               </Card>
             ))}
@@ -387,12 +432,18 @@ const IdeasPage = () => {
             '--ag-font-size': '14px',
           } as React.CSSProperties}>
             <AgGridReact
-              rowData={data}
+              rowData={data?.data || []}
               columnDefs={columnDefs}
               defaultColDef={{ resizable: true, sortable: true }}
               pagination={true}
               paginationPageSize={10}
               paginationPageSizeSelector={false}
+              rowSelection="multiple"
+              onSelectionChanged={(event) => {
+                const selectedNodes = event.api.getSelectedNodes();
+                const ids = selectedNodes.map(node => node.data.id);
+                setSelectedIds(ids);
+              }}
             />
           </Box>
         )
@@ -448,16 +499,54 @@ const IdeasPage = () => {
         </Box>
       )}
 
-      {navValue === 2 && (
-        <Box sx={{ textAlign: 'center', py: 10, opacity: 0.5 }}>
-          <SettingsIcon sx={{ fontSize: 60, mb: 2 }} />
-          <Typography variant="h6">Configuración</Typography>
-          <Typography variant="body2">Ajustes del sistema y del perfil.</Typography>
-        </Box>
+      {/* Barra de Acciones en Lote (Obsidian Premium) */}
+      {selectedIds.length > 0 && (
+        <Paper 
+          sx={{ 
+            position: 'fixed', 
+            bottom: _isMobile ? 80 : 32, 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+            bgcolor: alpha('#0c0c0e', 0.9),
+            backdropFilter: 'blur(20px)',
+            border: '1px solid',
+            borderColor: 'primary.main',
+            borderRadius: 6,
+            px: 4,
+            py: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            zIndex: 1000,
+            boxShadow: '0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(59, 130, 246, 0.2)'
+          }}
+        >
+          <Typography variant="body1" sx={{ color: 'white', fontWeight: 700 }}>
+            {selectedIds.length} seleccionados
+          </Typography>
+          <Stack direction="row" spacing={2}>
+            <Button 
+              variant="text" 
+              onClick={() => setSelectedIds([])}
+              sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={() => handleDelete(selectedIds)}
+              startIcon={<DeleteIcon />}
+              sx={{ borderRadius: 3, fontWeight: 700 }}
+            >
+              Borrar Lote
+            </Button>
+          </Stack>
+        </Paper>
       )}
 
       {/* Bottom Navigation (Móvil) */}
-      {isMobile && (
+      {_isMobile && (
         <Paper 
           sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: '#050505', borderTop: '1px solid #222' }} 
           elevation={3}
@@ -476,6 +565,7 @@ const IdeasPage = () => {
       )}
 
       <IdeaDialog
+        key={dialogOpen ? (selectedIdea?.id || `new-${dialogKey}`) : 'closed'}
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSave={handleSave}

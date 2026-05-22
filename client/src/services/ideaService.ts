@@ -8,10 +8,20 @@ export interface Idea {
   createdAt: string;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-export const getIdeas = async (): Promise<Idea[]> => {
-  const { data } = await axios.get(`${API_URL}/ideas`);
+export const getIdeas = async (page: number = 1, limit: number = 100): Promise<PaginatedResponse<Idea>> => {
+  const { data } = await axios.get(`${API_URL}/ideas`, { params: { page, limit } });
   return data;
 };
 

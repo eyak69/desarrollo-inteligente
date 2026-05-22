@@ -1,6 +1,10 @@
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-const path = require('path');
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -15,7 +19,11 @@ async function createDatabase() {
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME || 'desarrollo'}\`;`);
     console.log(`✅ Base de datos '${process.env.DB_NAME || 'desarrollo'}' creada o ya existente.`);
   } catch (err) {
-    console.error('❌ Error al crear la base de datos:', err.message);
+    if (err instanceof Error) {
+      console.error('❌ Error al crear la base de datos:', err.message);
+    } else {
+      console.error('❌ Error al crear la base de datos:', err);
+    }
   } finally {
     await connection.end();
   }

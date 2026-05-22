@@ -1,75 +1,68 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { IdeaService } from '@/services/idea.service';
-import { createIdeaSchema, updateIdeaSchema } from '@/schemas/idea.schema';
+
 
 export class IdeaController {
   constructor(private readonly service: IdeaService) {}
 
-  getAll = async (req: Request, res: Response) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const ideas = await this.service.listIdeas();
-      res.json(ideas);
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      
+      const result = await this.service.listIdeas(page, limit);
+      res.json(result);
     } catch (error) {
-      console.error('Error in IdeaController.getAll:', error);
-      res.status(500).json({ error: 'Error al obtener las ideas' });
+      next(error);
     }
   };
 
-  create = async (req: Request, res: Response) => {
+  create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const validatedData = createIdeaSchema.parse(req.body);
-      const newIdea = await this.service.createIdea(validatedData);
+      // req.body ya viene validado por el middleware 'validate'
+      const newIdea = await this.service.createIdea(req.body);
       res.status(201).json(newIdea);
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        return res.status(422).json({ error: 'Validación fallida', details: error.errors });
-      }
-      res.status(500).json({ error: 'Error al crear la idea' });
+    } catch (error) {
+      next(error);
     }
   };
 
-  update = async (req: Request, res: Response) => {
+  update = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const validatedData = updateIdeaSchema.parse(req.body);
-      await this.service.updateIdea(id, validatedData);
+      await this.service.updateIdea(id, req.body);
       res.status(204).send();
-    } catch (error: any) {
-      if (error.name === 'ZodError') {
-        return res.status(422).json({ error: 'Validación fallida', details: error.errors });
-      }
-      res.status(500).json({ error: 'Error al actualizar la idea' });
+    } catch (error) {
+      next(error);
     }
   };
 
-  delete = async (req: Request, res: Response) => {
+  delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
       await this.service.deleteIdea(id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Error al eliminar la idea' });
+      next(error);
     }
   };
 
-  getArchived = async (req: Request, res: Response) => {
+  getArchived = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const archived = await this.service.listArchivedIdeas();
       res.json(archived);
     } catch (error) {
-      console.error('Error in IdeaController.getArchived:', error);
-      res.status(500).json({ error: 'Error al obtener el archivo' });
+      next(error);
     }
   };
 
-  restore = async (req: Request, res: Response) => {
+  restore = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
       await this.service.restoreIdea(id);
       res.status(204).send();
     } catch (error) {
-      console.error('Error in IdeaController.restore:', error);
-      res.status(500).json({ error: 'Error al restaurar la idea' });
+      next(error);
     }
   };
 }

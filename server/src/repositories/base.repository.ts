@@ -1,4 +1,5 @@
 import { Knex } from 'knex';
+import crypto from 'crypto';
 
 /**
  * Repositorio Base Genérico
@@ -15,18 +16,36 @@ export abstract class BaseRepository<T extends { id: string }> {
   ) {}
 
   /**
-   * Obtiene todos los registros no eliminados
+   * Obtiene registros paginados
+   */
+  async getPaged(page: number = 1, limit: number = 10): Promise<{ data: T[], total: number }> {
+    const offset = (page - 1) * limit;
+    
+    const [data, countResult] = await Promise.all([
+      this.db<T>(this.tableName)
+        .whereNull('deleted_at')
+        .limit(limit)
+        .offset(offset)
+        .orderBy('created_at', 'desc'),
+      this.db(this.tableName)
+        .whereNull('deleted_at')
+        .count('id as total')
+        .first()
+    ]);
+
+    return {
+      data: data as T[],
+      total: Number((countResult as Record<string, unknown>)?.total || 0)
+    };
+  }
+
+  /**
+   * Obtiene todos los registros no eliminados (Legacy / Small datasets)
    */
   async getAll(): Promise<T[]> {
-    try {
-      return await this.db<T>(this.tableName)
-        .whereNull('deleted_at')
-        .orderBy('created_at', 'desc');
-    } catch (error) {
-      // Regla 128: Registro detallado en logs antes de relanzar
-      console.error(`❌ BaseRepository [${this.tableName}]: Error en getAll:`, error);
-      throw error;
-    }
+    return await this.db<T>(this.tableName)
+      .whereNull('deleted_at')
+      .orderBy('created_at', 'desc');
   }
 
   /**

@@ -7,12 +7,14 @@ El Blueprint utiliza un sistema de notificaciones no obstructivas (Toasts) para 
 - [BLOCKER] **Máxima de Interacción:** "Todo lo que sea una pregunta que el usuario debe contestar no debe existir eso". Se prioriza la acción directa con reversibilidad (Undo). Consultar la [Máxima de Stitch](file:///c:/Users/Cristian/OneDrive/Antigravity/desarrollo%20inteligente/.blueprint/docs/ui/stitch-maxima.md) para la generación de interfaces.
 - [BLOCKER] **Uso de Diálogo Estándar:** Cuando una acción es irreversible, altamente crítica o requiere una decisión consciente (ej: Hard Delete de datos sensibles), se debe utilizar el componente `ConfirmDialog` estándar del Blueprint.
 - [BLOCKER] **Prohibición Nativa:** Queda terminantemente prohibido el uso de `window.confirm()`. Si hay que preguntar, se usa el estándar de la casa.
+- [STRICT] **Regla de Lote (Batch Rule):** Si el objetivo de la interfaz (grilla o lista) amerita gestión de múltiples elementos, se DEBE implementar selección múltiple. Las acciones destructivas en este modo se confirman UNA sola vez para todo el lote.
 
 ## Guía de Selección: Undo vs Diálogo
 
 | Situación | Patrón Recomendado | Feedback |
 | :--- | :--- | :--- |
 | Acción cotidiana (Borrar idea, archivar) | **Acción Directa + Undo** | Toast con botón "Deshacer" |
+| Selección Múltiple (Lote) | **Batch ConfirmDialog** | Diálogo único para N elementos |
 | Acción de alto riesgo (Vaciar papelera, reset) | **Diálogo Estándar** | `ConfirmDialog` Premium |
 | Configuración de sistema | **Auto-save** | Indicador visual discreto |
 

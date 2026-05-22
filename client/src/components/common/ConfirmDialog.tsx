@@ -5,7 +5,6 @@ import {
   DialogContentText, 
   DialogActions, 
   Button,
-  Box,
   Typography,
   alpha
 } from '@mui/material';
