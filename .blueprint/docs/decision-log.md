@@ -201,3 +201,36 @@ de storage es mínimo para el volumen de datos que manejan estos proyectos.
 ### Consecuencias
 Todos los queries de listado deben filtrar `WHERE deleted_at IS NULL`.
 `BaseRepository` encapsula este filtro para evitar omisiones accidentales.
+
+---
+
+## 2026-05-08 — Interacción de Usuario: Selección Múltiple y Borrado en Lote Mandatorio
+
+### Contexto
+La gestión de elementos individuales en grillas o listas masivas genera una fatiga cognitiva alta si se requiere confirmación por cada item. El usuario necesita eficiencia operativa sin sacrificar la seguridad de los datos.
+
+### Decisión
+Se establece como estándar **BLOCKER** que cualquier interfaz de listado (Grilla o Cards) que permita acciones destructivas DEBE implementar selección múltiple. Las acciones masivas se ejecutan tras una confirmación única mediante el `ConfirmDialog` premium del Blueprint.
+
+### Motivo
+Cumple con la política de "Zero Interruption": el usuario realiza N selecciones y confirma 1 sola vez. Esto acelera el flujo de trabajo masivo. Al mismo tiempo, se mantiene la seguridad al unificar el borrado individual bajo el mismo diálogo premium, eliminando el uso de diálogos nativos del navegador.
+
+### Consecuencias
+Las interfaces deben incluir estados de selección (checkboxes/fila seleccionada) y una barra de acciones contextual (Fixed HUD) que aparezca dinámicamente. El backend debe soportar la recepción de lotes de IDs para procesamiento en paralelo o transaccional.
+
+---
+
+## 2026-05-22 — Postergación de Refactorización de Ideas y Sincronización de Gobernanza
+
+### Contexto
+Se identificó que la aplicación de "Ideas" actual no sigue los estándares recientemente descritos en el blueprint en términos de arquitectura de archivos (Vertical Slices en backend), ubicación/nombres de tests (no colocalizados y usando `.test.ts`), ni normalización de base de datos (única tabla plana sin relacionar con `users` o `categories`).
+
+### Decisión
+Se decidió congelar el estado actual del código de la app de Ideas y no ejecutar una refactorización inmediata. En su lugar, se documentará detalladamente esta brecha en el blueprint para que cualquier intervención futura en el código de ideas o desarrollo de nuevas funcionalidades se planifique siguiendo los patrones definidos.
+
+### Motivo
+Optimización del presupuesto de tokens del modelo (IA) y foco estratégico en la consolidación de la gobernanza documental sobre la ejecución inmediata de reescrituras de código no solicitadas expresamente.
+
+### Consecuencias
+La aplicación Ideas acumula deuda técnica visible. Al no estar alineada con los Vertical Slices, los nuevos módulos que se desarrollen en el backend requerirán adaptaciones o vivirán temporalmente de forma híbrida. Cualquier cambio futuro en el modelo de ideas que implique usuarios o categorías deberá forzar una migración de base de datos relacional y un mapeo DTO en el repositorio.
+

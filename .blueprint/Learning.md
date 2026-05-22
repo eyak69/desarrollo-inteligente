@@ -88,3 +88,16 @@ implique una excepción STRICT o un hallazgo relevante.
 **Consecuencia:** En tablas con muchas filas, un `ALTER TABLE` que agrega NOT NULL sin default reescribe toda la tabla y genera un lock largo. La estrategia de dos migraciones evita el lock. Seguir este patrón para cualquier cambio de schema en tablas grandes en producción.
 
 **¿Se debe actualizar el blueprint?** Sí — agregar sección "Migraciones en producción sin downtime" en `database-rules.md`. Responsable: tech lead.
+
+---
+
+## 2026-05-22 — [Ideas] Auditoría de Discrepancias y Deuda Técnica de la App
+
+**Regla afectada:** `.blueprint/project-standards/architecture.md` (Vertical Slice) y `.blueprint/docs/database/database-rules.md` (Normalización 3NF).
+
+**Excepción/Decisión:** La aplicación de Ideas heredada continúa operando bajo una arquitectura por capas legacy (`/controllers`, `/services`, `/repositories`) y una base de datos desnormalizada (sin tablas para `users` o `categories`). Se decidió **no refactorizar inmediatamente** el código para conservar tokens de IA en esta etapa, pero se documentaron las discrepancias y las alternativas de mitigación (atómica incremental vs reestructuración física sin cambios de DB).
+
+**Consecuencia:** El sistema mantiene una deuda técnica estructural latente. Todo nuevo desarrollo debe ser evaluado con cuidado para evitar que incremente el acoplamiento o consolide una base de datos plana no escalable.
+
+**¿Se debe actualizar el blueprint?** No — el blueprint ya refleja el estado ideal (Vertical Slices y DB 3NF). Esta entrada documenta la justificación e identificación de la brecha existente en la app de Ideas.
+
