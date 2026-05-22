@@ -154,9 +154,31 @@ const main = async () => {
 
       // Eliminar archivos de frontend
       eliminarRuta('client/src/features/ideas');
+      eliminarRuta('client/src/services/ideaService.ts');
+
+      // Modificar Layout.tsx para remover ideas del menú
+      const layoutTsxAbs = path.join(process.cwd(), 'client/src/components/layout/Layout.tsx');
+      if (fs.existsSync(layoutTsxAbs)) {
+        let layoutContenido = fs.readFileSync(layoutTsxAbs, 'utf-8');
+        
+        // Remover el item de menú de ideas
+        layoutContenido = layoutContenido.replace(
+          /\{\s*text:\s*'Laboratorio de Ideas',\s*icon:\s*<IdeasIcon\s*\/>,\s*path:\s*'\/ideas'\s*\},?\r?\n/,
+          ''
+        );
+        // Cambiar la selección hardcodeada a Dashboard
+        layoutContenido = layoutContenido.replace(
+          /=== 'Laboratorio de Ideas'/g,
+          "=== 'Dashboard'"
+        );
+        
+        fs.writeFileSync(layoutTsxAbs, layoutContenido, 'utf-8');
+        console.log('✅ Layout.tsx saneado de referencias de Ideas.');
+      }
 
       // Modificar App.tsx para dejar un layout de bienvenida limpio
       const appTxsAbs = path.join(process.cwd(), 'client/src/App.tsx');
+
       if (fs.existsSync(appTxsAbs)) {
         const appCleanContent = `import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -230,9 +252,11 @@ export default App;
       eliminarRuta('server/src/repositories/idea.repository.integration.test.ts');
       eliminarRuta('server/src/schemas/idea.schema.ts');
       eliminarRuta('server/src/services/idea.service.ts');
+      eliminarRuta('server/dump-db.js');
       
       // Eliminar semillas de ideas
       eliminarRuta('server/src/database/seeds/01_initial_ideas.ts');
+
 
       // Eliminar migraciones de ideas de forma dinámica
       const migrationsDir = path.join(process.cwd(), 'server/src/database/migrations');
